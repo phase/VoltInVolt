@@ -102,8 +102,8 @@ public:
 	 */
 	void changeCurrentLocation(string newFilename, size_t newLine)
 	{
-		source().location.filename = newFilename;
-		source().location.line = newLine;
+		mSource.location.filename = newFilename;
+		mSource.location.line = newLine;
 		return;
 	}
 

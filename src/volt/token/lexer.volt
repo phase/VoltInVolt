@@ -2,11 +2,11 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.token.lexer;
 
+import core.stdc.time;
 import watt.conv;
 import watt.text.ascii;
 import watt.text.format;
 import watt.text.utf;
-//import std.c.time : time, localtime;
 
 import volt.token.location : Location;
 import volt.token.source : Source, Mark;
@@ -280,8 +280,8 @@ bool lexIdentifier(TokenWriter tw)
 
 bool lexSpecialToken(TokenWriter tw, Token token)
 {
-	const string[] months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-	const string[] days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+	string[] months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+	string[] days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 	switch(token.value) {
 	case "__DATE__":
@@ -336,7 +336,8 @@ bool lexSpecialToken(TokenWriter tw, Token token)
 
 bool lexSymbol(TokenWriter tw)
 {
-	switch (tw.source.current) {
+	dchar c = tw.source.current;
+	switch (c) {
 	case '/':
 		return lexSlash(tw);
 	case '.':
@@ -741,7 +742,7 @@ bool lexQString(TokenWriter tw)
 	token.type = TokenType.StringLiteral;
 	auto mark = tw.source.save();
 	bool leof;
-	if (tw.source.lookahead(1, leof) == '{') {
+	if (tw.source.lookahead(1, out leof) == '{') {
 		return lexTokenString(tw);
 	}
 	match(tw.source, 'q');
@@ -771,14 +772,14 @@ bool lexQString(TokenWriter tw)
 		nesting = false;
 		if (isdalpha(tw.source.current, Position.Start)) {
 			char[] buf;
-			buf ~= tw.source.current;
+			buf ~= cast(char) tw.source.current;
 			tw.source.next();
 			while (isdalpha(tw.source.current, Position.MiddleOrEnd)) {
-				buf ~= tw.source.current;
+				buf ~= cast(char) tw.source.current;
 				tw.source.next();
 			}
 			match(tw.source, '\n');
-			identdelim = buf.idup;
+			identdelim = cast(string) buf;
 		} else {
 			opendelimiter = tw.source.current;
 			closedelimiter = tw.source.current;
@@ -787,7 +788,7 @@ bool lexQString(TokenWriter tw)
 
 	if (identdelim is null) match(tw.source, opendelimiter);
 	int nest = 1;
-	LOOP: while (true) {
+	while (true) {
 		if (tw.source.eof) {
 			throw makeExpected(token.location, "string literal terminator.");
 		}
@@ -809,15 +810,20 @@ bool lexQString(TokenWriter tw)
 			break;
 		} else if (identdelim !is null && tw.source.current == '\n') {
 			size_t look = 1;
+			bool restart;
 			while (look - 1 < identdelim.length) {
-				dchar c = tw.source.lookahead(look, leof);
+				dchar c = tw.source.lookahead(look, out leof);
 				if (leof) {
 					throw makeExpected(token.location, "string literal terminator.");
 				}
 				if (c != identdelim[look - 1]) {
-					continue LOOP;
+					restart = true;
+					break;
 				}
 				look++;
+			}
+			if (restart) {
+				continue;
 			}
 			for (int i; 0 < look; i++) {
 				tw.source.next();
@@ -877,7 +883,18 @@ bool lexTokenString(TokenWriter tw)
 size_t consume(Source src, dchar[] characters...)
 {
 	size_t consumed;
-	while (characters.count(src.current) > 0) {
+	size_t count(dchar[] arr, dchar c)
+	{
+		size_t cc;
+		for (size_t i = 0; i < arr.length; i++) {
+			if (arr[i] == c) {
+				cc++;
+			}
+		}
+		return cc;
+	}
+
+	while (count(characters, src.current) > 0) {
 		if (src.current != '_') consumed++;
 		src.next();
 	}
@@ -911,7 +928,7 @@ bool lexNumber(TokenWriter tw)
 			auto consumed = consume(src, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 			                             'a', 'b', 'c', 'd', 'e', 'f',
 			                             'A', 'B', 'C', 'D', 'E', 'F', '_');
-			if ((src.current == '.' && src.lookahead(1, tmp) != '.') || src.current == 'p' || src.current == 'P') return lexReal(tw);
+			if ((src.current == '.' && src.lookahead(1, out tmp) != '.') || src.current == 'p' || src.current == 'P') return lexReal(tw);
 			if (consumed == 0) {
 				throw makeExpected(src.location, "hexadecimal digit");
 			}
@@ -921,15 +938,15 @@ bool lexNumber(TokenWriter tw)
 			 * DMD treats this as an error, so we do too.
 			 */
 			throw makeUnsupported(src.location, "octal literals");
-		} else if (src.current == 'f' || src.current == 'F' || (src.current == '.' && src.lookahead(1, tmp) != '.')) {
+		} else if (src.current == 'f' || src.current == 'F' || (src.current == '.' && src.lookahead(1, out tmp) != '.')) {
 			return lexReal(tw);
 		}
 	} else if (src.current == '1' || src.current == '2' || src.current == '3' || src.current == '4' || src.current == '5' ||
 	           src.current == '6' || src.current == '7' || src.current == '8' || src.current == '9') {
 		src.next();
-		if (src.current == '.' && src.lookahead(1, tmp) != '.') return lexReal(tw);
+		if (src.current == '.' && src.lookahead(1, out tmp) != '.') return lexReal(tw);
 		consume(src, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_');
-		if (src.current == '.' && src.lookahead(1, tmp) != '.') return lexReal(tw);
+		if (src.current == '.' && src.lookahead(1, out tmp) != '.') return lexReal(tw);
 	} else {
 		throw makeExpected(src.location, "integer literal");
 	}
@@ -956,9 +973,9 @@ bool lexNumber(TokenWriter tw)
 	return true;
 }
 
-string stripUnderscores(TokenWriter tw, mark_t mark)
+string stripUnderscores(TokenWriter tw, Mark mark)
 {
-	string[] str;
+	string str;
 	auto buf = tw.source.sliceFrom(mark);
 	for (size_t i = 0; i < buf.length; i++) {
 		str ~= buf[i];
@@ -1079,7 +1096,7 @@ bool lexPragma(TokenWriter tw)
 	if (Int.type != TokenType.IntegerLiteral) {
 		throw makeExpected(Int.location, "integer literal");
 	}
-	int lineNumber = to!int(Int.value);
+	int lineNumber = toInt(Int.value);
 	tw.pop();
 
 	skipWhitespace(tw);
@@ -1091,13 +1108,16 @@ bool lexPragma(TokenWriter tw)
 		buf ~= tw.source.next();
 	}
 	match(tw.source, '"');
-	string filename = toUTF8(buf);
+	string filename = cast(string) buf;
+	validate(filename);
 
-	assert(lineNumber >= 0);
+	if (lineNumber < 0) {
+		throw panic("negative line number");
+	}
 	if (lineNumber == 0) {
 		throw makeExpected(tw.source.location, "line number greater than zero");
 	}
-	tw.changeCurrentLocation(filename, lineNumber);
+	tw.changeCurrentLocation(filename, cast(uint) lineNumber);
 
 	skipWhitespace(tw);
 

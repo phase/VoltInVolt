@@ -4,9 +4,8 @@ import core.stdc.stdio;
 
 import volt.token.source;
 
-int main(string[] args)
+int main()
 {
-	printf("%d\n", args.length);
 	return 0;
 }
 
