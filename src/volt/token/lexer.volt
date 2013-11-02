@@ -74,6 +74,7 @@ void match(Source src, dchar c)
 
 	// Advance to the next character.
 	src.next();
+	return;
 }
 
 Token currentLocationToken(TokenWriter tw)
@@ -170,6 +171,7 @@ void skipWhitespace(TokenWriter tw)
 		tw.source.next();
 		if (tw.source.eof) break;
 	}
+	return;
 }
 
 void skipLineComment(TokenWriter tw)
@@ -179,6 +181,7 @@ void skipLineComment(TokenWriter tw)
 		tw.source.next();
 		if (tw.source.eof) return;
 	}
+	return;
 }
 
 void skipBlockComment(TokenWriter tw)
@@ -203,6 +206,7 @@ void skipBlockComment(TokenWriter tw)
 			tw.source.next();
 		}
 	}
+	return;
 }
 
 void skipNestingComment(TokenWriter tw)
@@ -227,6 +231,7 @@ void skipNestingComment(TokenWriter tw)
 			tw.source.next();
 		}
 	}
+	return;
 }
 
 bool lexEOF(TokenWriter tw)

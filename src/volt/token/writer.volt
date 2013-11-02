@@ -49,6 +49,9 @@ public:
 	 */
 	void addToken(Token token)
 	{
+		if (token is null) {
+			throw new Exception("adding null Token");
+		}
 		mTokens ~= token;
 		token.location.length = token.value.length;
 		return;
@@ -75,7 +78,11 @@ public:
 	 */
 	@property Token lastAdded()
 	{
-		return mTokens[$ - 1];
+		auto tok = mTokens[$ - 1];
+		if (tok is null) {
+			throw new Exception("null Token");
+		}
+		return tok;
 	}
 
 	/**
@@ -122,7 +129,7 @@ private:
 		start.value = "START";
 
 		// Reset the token array
-		mTokens.length = 1;
+		mTokens = new Token[](1);
 		mTokens[0] = start;
 		return;
 	}
