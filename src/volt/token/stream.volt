@@ -31,10 +31,11 @@ public:
 			throw panic("Token stream too short");
 		if (tokens[0].type != TokenType.Begin)
 			throw panic("Token stream not started correctly");
-		if (tokens[$-1].type != TokenType.End)
+		if (tokens[tokens.length-1].type != TokenType.End)
 			throw panic("Token stream not terminated correctly");
 
 		this.mTokens = tokens;
+		return;
 	}
 
 	/**
@@ -46,6 +47,7 @@ public:
 	void reset()
 	{
 		mIndex = 0;
+		return;
 	}
 
 	/**
@@ -106,7 +108,7 @@ public:
 	/**
 	 * Returns the current token. @see lookbehind.
 	 *
-	 * Thorws:
+	 * Throws:
 	 *   CompilerPanic on mIndex == 0.
 	 *
 	 * Side-effects:

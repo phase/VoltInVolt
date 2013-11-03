@@ -78,7 +78,7 @@ public:
 	 */
 	@property Token lastAdded()
 	{
-		auto tok = mTokens[$ - 1];
+		auto tok = mTokens[mTokens.length - 1];
 		if (tok is null) {
 			throw new Exception("null Token");
 		}
