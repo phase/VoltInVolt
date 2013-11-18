@@ -180,10 +180,10 @@ abstract class Node
 {
 public:
 	/// Where in the source this Node was defined, for diagnostic purposes.
-	Location location;
+	//Location location;
 
 	/// Retrieve the NodeType for this Node.
-	NodeType nodeType() { return mNodeType; }
+	@property NodeType nodeType() { return mNodeType; }
 
 protected:
 	this(NodeType nt)
@@ -213,7 +213,8 @@ public:
 	override string toString()
 	{
 		string str;
-		foreach (i, identifier; identifiers) {
+		for (size_t i = 0; i < identifiers.length; i++) {
+			auto identifier = identifiers[i];
 			str ~= identifier.value;
 			if (i < identifiers.length - 1) {
 				str ~= ".";
@@ -224,9 +225,10 @@ public:
 
 	string[] strings()
 	{
-		string[] ret = new string[identifiers.length];
+		string[] ret = new string[](identifiers.length);
 
-		foreach (i, identifier; identifiers) {
+		for (size_t i = 0; i < identifiers.length; i++) {
+			auto identifier = identifiers[i];
 			ret[i] = identifier.value;
 		}
 
@@ -248,18 +250,20 @@ class Identifier : Node
 public:
 	string value;
 
-	this() { super(NodeType.Identifier); }
+	this() { super(NodeType.Identifier); return; }
 	this(string s)
 	{
 		this();
 		value = s;
+		return;
 	}
 
 	this(Identifier i)
 	{
 		this();
 		value = i.value;
-		location = i.location;
+		//location = i.location;
+		return;
 	}
 }
 

@@ -215,7 +215,7 @@ public:
 class Constant : Exp
 {
 public:
-	union
+	union 
 	{
 		int _int;
 		uint _uint;

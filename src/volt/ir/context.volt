@@ -2,7 +2,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.ir.context;
 
-import std.string : format;
+import watt.conv;
+import watt.text.format;
 
 import volt.errors;
 import volt.ir.base;
@@ -107,7 +108,7 @@ public:
 	 */
 	this(Scope s, Node n, string name, Kind kind)
 	in {
-		assert(kind != Kind.Function);
+		////assert(kind != Kind.Function);
 	}
 	body {
 		this.name = name;
@@ -122,7 +123,7 @@ public:
 	 */
 	this(Scope parent, Node n, string name, Scope look, Kind kind)
 	in {
-		assert(kind == Kind.Alias);
+		////assert(kind == Kind.Alias);
 	}
 	body {
 		this.name = name;
@@ -165,15 +166,15 @@ public:
 
 	void markAliasResolved(Store s)
 	{
-		assert(kind == Kind.Alias);
-		assert(myAlias is null);
+		//assert(kind == Kind.Alias);
+		//assert(myAlias is null);
 		myAlias = s;
 	}
 
 	void markAliasResolved(Type t)
 	{
-		assert(kind == Kind.Alias);
-		assert(myAlias is null);
+		//assert(kind == Kind.Alias);
+		//assert(myAlias is null);
 		kind = Kind.Type;
 		node = t;
 	}
@@ -247,12 +248,13 @@ public:
 
 	void remove(string name)
 	{
-		symbols.remove(name);
+		//symbols.remove(name);
+		return;
 	}
 
 	string genAnonIdent()
 	{
-		return "__anon" ~ to!string(anon++);
+		return "__anon" ~ .toString(anon++);
 	}
 
 	/**
@@ -268,8 +270,8 @@ public:
 	 */
 	Store addAlias(Alias n, string name, Scope look = null)
 	in {
-		assert(n !is null);
-		assert(name !is null);
+		//assert(n !is null);
+		//assert(name !is null);
 	}
 	body {
 		errorOn(n, name);
@@ -290,8 +292,8 @@ public:
 	 */
 	Store addScope(Node n, Scope s, string name)
 	in {
-		assert(n !is null);
-		assert(name !is null);
+		//assert(n !is null);
+		//assert(name !is null);
 	}
 	body {
 		errorOn(n, name);
@@ -313,8 +315,8 @@ public:
 	 */
 	Store addType(Node n, string name)
 	in {
-		assert(n !is null);
-		assert(name !is null);
+		//assert(n !is null);
+		//assert(name !is null);
 	}
 	body {
 		errorOn(n, name);
@@ -334,13 +336,13 @@ public:
 	 */
 	Store addValue(Node n, string name)
 	in {
-		assert(n !is null);
-		assert(name !is null);
+		//assert(n !is null);
+		//assert(name !is null);
 	}
 	body {
 		errorOn(n, name);
-		ir.Store store;
-		if (n.nodeType == ir.NodeType.FunctionParam) {
+		Store store;
+		if (n.nodeType == NodeType.FunctionParam) {
 			store = new Store(this, n, name, Store.Kind.FunctionParam);
 		} else {
 			store = new Store(this, n, name, Store.Kind.Value);
@@ -361,11 +363,12 @@ public:
 	 */
 	Store addFunction(Function fn, string name)
 	in {
-		assert(fn !is null);
-		assert(name !is null);
+		//assert(fn !is null);
+		//assert(name !is null);
 	}
 	body {
-		auto ret = name in symbols;
+		//Store ret = (name in symbols);
+		auto ret = symbols[name];
 
 		if (ret is null) {
 			auto store = new Store(this, fn, name);
@@ -373,10 +376,10 @@ public:
 			return store;
 		} else if (ret.kind == Store.Kind.Function) {
 			ret.functions ~= fn;
-			return *ret;
+			return ret;
 		}
 		errorDefined(fn, name);
-		assert(false);
+		//assert(false);
 	}
 
 	/**
@@ -390,8 +393,8 @@ public:
 	 */
 	Store addTemplate(Node n, string name)
 	in {
-		assert(n !is null);
-		assert(name !is null);
+		//assert(n !is null);
+		//assert(name !is null);
 	}
 	body {
 		errorOn(n, name);
@@ -411,8 +414,8 @@ public:
 	 */
 	Store addEnumDeclaration(EnumDeclaration e)
 	in {
-		assert(e !is null);
-		assert(e.name.length > 0);
+		//assert(e !is null);
+		//assert(e.name.length > 0);
 	}
 	body {
 		errorOn(e, e.name);
@@ -432,9 +435,9 @@ public:
 	 */
 	void addStore(Store s, string name)
 	in {
-		assert(s !is null);
-		assert(s.node !is null);
-		assert(name !is null);
+		//assert(s !is null);
+		//assert(s.node !is null);
+		//assert(name !is null);
 	}
 	body {
 		errorOn(s.node, name);
@@ -452,10 +455,11 @@ public:
 	 */
 	Store getStore(string name)
 	{
-		auto ret = name in symbols;
+		//auto ret = name in symbols;
+		auto ret = symbols[name];
 		if (ret is null)
 			return null;
-		auto s = *ret;
+		auto s = ret;
 		while (s.myAlias !is null) {
 			s = s.myAlias;
 		}
@@ -468,7 +472,8 @@ public:
 	Declaration[] getNestedDeclarations()
 	{
 		Declaration[] variables;
-		foreach (store; symbols.values) {
+		for (size_t i = 0; i < symbols.values.length; i++) {
+			auto store = symbols.values[i];
 			auto variable = cast(ir.Variable) store.node;
 			if (variable is null || variable.storage != Variable.Storage.Nested) {
 				continue;
@@ -481,8 +486,8 @@ public:
 private:
 	void errorOn(Node n, string name)
 	in {
-		assert(n !is null);
-		assert(name !is null);
+		//assert(n !is null);
+		//assert(name !is null);
 	}
 	body {
 		auto ret = name in symbols;
