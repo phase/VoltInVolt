@@ -2,9 +2,6 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.ir.copy;
 
-import std.conv : to;
-import std.string : format;
-
 import ir = volt.ir.ir;
 import volt.ir.util;
 import volt.token.location;

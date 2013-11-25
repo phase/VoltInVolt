@@ -2,12 +2,10 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.ir.util;
 
-import std.conv : to;
-
 import volt.errors;
 import volt.interfaces;
 import volt.token.location;
-import volt.semantic.util : canonicaliseStorageType;
+//import volt.semantic.util : canonicaliseStorageType;
 import volt.util.string : unescapeString;
 import ir = volt.ir.ir;
 import volt.ir.copy;
@@ -514,7 +512,7 @@ ir.Constant buildSizeTConstant(Location loc, LanguagePass lp, int val)
 /**
  * Builds a constant string.
  */
-ir.Constant buildStringConstant(Location loc, string val)
+version (none) ir.Constant buildStringConstant(Location loc, string val)
 {
 	auto c = new ir.Constant();
 	c.location = loc;
