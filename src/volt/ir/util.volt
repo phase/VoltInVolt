@@ -7,18 +7,18 @@ import volt.interfaces;
 import volt.token.location;
 //import volt.semantic.util : canonicaliseStorageType;
 import volt.util.string : unescapeString;
-import ir = volt.ir.ir;
+import volt.ir.ir;
 import volt.ir.copy;
 
 
 /**
  * Builds a QualifiedName from a string.
  */
-ir.QualifiedName buildQualifiedName(Location loc, string value)
+QualifiedName buildQualifiedName(Location loc, string value)
 {
-	auto i = new ir.Identifier(value);
+	auto i = new Identifier(value);
 	i.location = loc;
-	auto q = new ir.QualifiedName();
+	auto q = new QualifiedName();
 	q.identifiers = [i];
 	q.location = loc;
 	return q;
@@ -27,15 +27,15 @@ ir.QualifiedName buildQualifiedName(Location loc, string value)
 /**
  * Builds a QualifiedName from an array.
  */
-ir.QualifiedName buildQualifiedName(Location loc, string[] value)
+QualifiedName buildQualifiedName(Location loc, string[] value)
 {
-	auto idents = new ir.Identifier[value.length];
-	foreach (i, val; value) {
-		idents[i] = new ir.Identifier(val);
+	auto idents = new Identifier[](value.length);
+	for (size_t i = 0; i < value.length; i++) {
+		idents[i] = new Identifier(value[i]);
 		idents[i].location = loc;
 	}
 
-	auto q = new ir.QualifiedName();
+	auto q = new QualifiedName();
 	q.identifiers = idents;
 	q.location = loc;
 	return q;
@@ -44,10 +44,10 @@ ir.QualifiedName buildQualifiedName(Location loc, string[] value)
 /**
  * Builds a QualifiedName from a Identifier.
  */
-ir.QualifiedName buildQualifiedNameSmart(ir.Identifier i)
+QualifiedName buildQualifiedNameSmart(Identifier i)
 {
-	auto q = new ir.QualifiedName();
-	q.identifiers = [new ir.Identifier(i)];
+	auto q = new QualifiedName();
+	q.identifiers = [new Identifier(i)];
 	q.location = i.location;
 	return q;
 }
@@ -56,44 +56,44 @@ ir.QualifiedName buildQualifiedNameSmart(ir.Identifier i)
  * Return the scope from the given type if it is,
  * a aggregate or a derivative from one.
  */
-ir.Scope getScopeFromType(ir.Type type)
+Scope getScopeFromType(Type type)
 {
-	switch (type.nodeType) with (ir.NodeType) {
+	switch (type.nodeType) with (NodeType) {
 	case TypeReference:
-		auto asTypeRef = cast(ir.TypeReference) type;
+		auto asTypeRef = cast(TypeReference) type;
 		assert(asTypeRef !is null);
 		assert(asTypeRef.type !is null);
 		return getScopeFromType(asTypeRef.type);
 	case ArrayType:
-		auto asArray = cast(ir.ArrayType) type;
+		auto asArray = cast(ArrayType) type;
 		assert(asArray !is null);
 		return getScopeFromType(asArray.base);
 	case PointerType:
-		auto asPointer = cast(ir.PointerType) type;
+		auto asPointer = cast(PointerType) type;
 		assert(asPointer !is null);
 		return getScopeFromType(asPointer.base);
 	case Struct:
-		auto asStruct = cast(ir.Struct) type;
+		auto asStruct = cast(Struct) type;
 		assert(asStruct !is null);
 		return asStruct.myScope;
 	case Union:
-		auto asUnion = cast(ir.Union) type;
+		auto asUnion = cast(Union) type;
 		assert(asUnion !is null);
 		return asUnion.myScope;
 	case Class:
-		auto asClass = cast(ir.Class) type;
+		auto asClass = cast(Class) type;
 		assert(asClass !is null);
 		return asClass.myScope;
 	case Interface:
-		auto asInterface = cast(ir._Interface) type;
+		auto asInterface = cast(_Interface) type;
 		assert(asInterface !is null);
 		return asInterface.myScope;
 	case UserAttribute:
-		auto asAttr = cast(ir.UserAttribute) type;
+		auto asAttr = cast(UserAttribute) type;
 		assert(asAttr !is null);
 		return asAttr.myScope;
 	case Enum:
-		auto asEnum = cast(ir.Enum) type;
+		auto asEnum = cast(Enum) type;
 		assert(asEnum !is null);
 		return asEnum.myScope;
 	default:
@@ -106,13 +106,13 @@ ir.Scope getScopeFromType(ir.Type type)
  *
  * Returns null for Values and non-scope types.
  */
-ir.Scope getScopeFromStore(ir.Store store)
+Scope getScopeFromStore(Store store)
 {
-	final switch(store.kind) with (ir.Store.Kind) {
+	final switch(store.kind) with (Store.Kind) {
 	case Scope:
 		return store.s;
 	case Type:
-		auto type = cast(ir.Type)store.node;
+		auto type = cast(Type)store.node;
 		assert(type !is null);
 		return getScopeFromType(type);
 	case Value:
@@ -133,41 +133,41 @@ ir.Scope getScopeFromStore(ir.Store store)
  * TypeReferences, but inserting one when it comes
  * across a named type.
  */
-ir.Type copyTypeSmart(Location loc, ir.Type type)
+Type copyTypeSmart(Location loc, Type type)
 {
-	switch (type.nodeType) with (ir.NodeType) {
+	switch (type.nodeType) with (NodeType) {
 	case PrimitiveType:
-		auto pt = cast(ir.PrimitiveType)type;
+		auto pt = cast(PrimitiveType)type;
 		pt.location = loc;
-		pt = new ir.PrimitiveType(pt.type);
+		pt = new PrimitiveType(pt.type);
 		return pt;
 	case PointerType:
-		auto pt = cast(ir.PointerType)type;
+		auto pt = cast(PointerType)type;
 		pt.location = loc;
-		pt = new ir.PointerType(copyTypeSmart(loc, pt.base));
+		pt = new PointerType(copyTypeSmart(loc, pt.base));
 		return pt;
 	case ArrayType:
-		auto at = cast(ir.ArrayType)type;
+		auto at = cast(ArrayType)type;
 		at.location = loc;
-		at = new ir.ArrayType(copyTypeSmart(loc, at.base));
+		at = new ArrayType(copyTypeSmart(loc, at.base));
 		return at;
 	case StaticArrayType:
-		auto asSat = cast(ir.StaticArrayType)type;
-		auto sat = new ir.StaticArrayType();
+		auto asSat = cast(StaticArrayType)type;
+		auto sat = new StaticArrayType();
 		sat.location = loc;
 		sat.base = copyTypeSmart(loc, asSat.base);
 		sat.length = asSat.length;
 		return sat;
 	case AAType:
-		auto asAA = cast(ir.AAType)type;
-		auto aa = new ir.AAType();
+		auto asAA = cast(AAType)type;
+		auto aa = new AAType();
 		aa.location = loc;
 		aa.value = copyTypeSmart(loc, asAA.value);
 		aa.key = copyTypeSmart(loc, asAA.key);
 		return aa;
 	case FunctionType:
-		auto asFt = cast(ir.FunctionType)type;
-		auto ft = new ir.FunctionType(asFt);
+		auto asFt = cast(FunctionType)type;
+		auto ft = new FunctionType(asFt);
 		ft.location = loc;
 		ft.ret = copyTypeSmart(loc, ft.ret);
 		foreach(i, ref t; ft.params) {
@@ -175,8 +175,8 @@ ir.Type copyTypeSmart(Location loc, ir.Type type)
 		}
 		return ft;
 	case DelegateType:
-		auto asDg = cast(ir.DelegateType)type;
-		auto dg = new ir.DelegateType(asDg);
+		auto asDg = cast(DelegateType)type;
+		auto dg = new DelegateType(asDg);
 		dg.location = loc;
 		dg.ret = copyTypeSmart(loc, dg.ret);
 		foreach(i, ref t; dg.params) {
@@ -184,19 +184,19 @@ ir.Type copyTypeSmart(Location loc, ir.Type type)
 		}
 		return dg;
 	case StorageType:
-		auto asSt = cast(ir.StorageType)type;
-		auto st = new ir.StorageType();
+		auto asSt = cast(StorageType)type;
+		auto st = new StorageType();
 		st.location = loc;
 		if (asSt.base !is null) st.base = copyTypeSmart(loc, asSt.base);
 		st.type = asSt.type;
 		st.isCanonical = asSt.isCanonical;
 		return st;
 	case TypeReference:
-		auto tr = cast(ir.TypeReference)type;
+		auto tr = cast(TypeReference)type;
 		assert(tr.type !is null);
 		return copyTypeSmart(loc, tr.type);
 	case NullType:
-		auto nt = new ir.NullType();
+		auto nt = new NullType();
 		nt.location = type.location;
 		return nt;
 	case UserAttribute:
@@ -213,18 +213,18 @@ ir.Type copyTypeSmart(Location loc, ir.Type type)
 	}
 }
 
-ir.TypeReference buildTypeReference(Location loc, ir.Type type, string[] names...)
+TypeReference buildTypeReference(Location loc, Type type, string[] names...)
 {
-	auto tr = new ir.TypeReference();
+	auto tr = new TypeReference();
 	tr.location = loc;
 	tr.type = type;
 	tr.id = buildQualifiedName(loc, names);
 	return tr;
 }
 
-ir.StorageType buildStorageType(Location loc, ir.StorageType.Kind kind, ir.Type base)
+StorageType buildStorageType(Location loc, StorageType.Kind kind, Type base)
 {
-	auto storage = new ir.StorageType();
+	auto storage = new StorageType();
 	storage.location = loc;
 	storage.type = kind;
 	storage.base = base;
@@ -234,57 +234,57 @@ ir.StorageType buildStorageType(Location loc, ir.StorageType.Kind kind, ir.Type 
 /**
  * Build a PrimitiveType.
  */
-ir.PrimitiveType buildPrimitiveType(Location loc, ir.PrimitiveType.Kind kind)
+PrimitiveType buildPrimitiveType(Location loc, PrimitiveType.Kind kind)
 {
-	auto pt = new ir.PrimitiveType(kind);
+	auto pt = new PrimitiveType(kind);
 	pt.location = loc;
 	return pt;
 }
 
-ir.ArrayType buildArrayType(Location loc, ir.Type base)
+ArrayType buildArrayType(Location loc, Type base)
 {
-	auto array = new ir.ArrayType();
+	auto array = new ArrayType();
 	array.location = loc;
 	array.base = base;
 	return array;
 }
 
-ir.ArrayType buildArrayTypeSmart(Location loc, ir.Type base)
+ArrayType buildArrayTypeSmart(Location loc, Type base)
 {
-	auto array = new ir.ArrayType();
+	auto array = new ArrayType();
 	array.location = loc;
 	array.base = copyTypeSmart(loc, base);
 	return array;
 }
 
-ir.PrimitiveType buildVoid(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Void); }
-ir.PrimitiveType buildBool(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Bool); }
-ir.PrimitiveType buildChar(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Char); }
-ir.PrimitiveType buildDchar(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Dchar); }
-ir.PrimitiveType buildWchar(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Wchar); }
-ir.PrimitiveType buildByte(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Byte); }
-ir.PrimitiveType buildUbyte(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Ubyte); }
-ir.PrimitiveType buildShort(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Short); }
-ir.PrimitiveType buildUshort(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Ushort); }
-ir.PrimitiveType buildInt(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Int); }
-ir.PrimitiveType buildUint(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Uint); }
-ir.PrimitiveType buildLong(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Long); }
-ir.PrimitiveType buildUlong(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Ulong); }
-ir.PrimitiveType buildSizeT(Location loc, LanguagePass lp) { return lp.settings.getSizeT(loc); }
-ir.PrimitiveType buildFloat(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Float); }
-ir.PrimitiveType buildDouble(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Double); }
-ir.PrimitiveType buildReal(Location loc) { return buildPrimitiveType(loc, ir.PrimitiveType.Kind.Real); }
+PrimitiveType buildVoid(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Void); }
+PrimitiveType buildBool(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Bool); }
+PrimitiveType buildChar(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Char); }
+PrimitiveType buildDchar(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Dchar); }
+PrimitiveType buildWchar(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Wchar); }
+PrimitiveType buildByte(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Byte); }
+PrimitiveType buildUbyte(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Ubyte); }
+PrimitiveType buildShort(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Short); }
+PrimitiveType buildUshort(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Ushort); }
+PrimitiveType buildInt(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Int); }
+PrimitiveType buildUint(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Uint); }
+PrimitiveType buildLong(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Long); }
+PrimitiveType buildUlong(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Ulong); }
+PrimitiveType buildSizeT(Location loc, LanguagePass lp) { return lp.settings.getSizeT(loc); }
+PrimitiveType buildFloat(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Float); }
+PrimitiveType buildDouble(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Double); }
+PrimitiveType buildReal(Location loc) { return buildPrimitiveType(loc, PrimitiveType.Kind.Real); }
 
 /**
  * Build a string (immutable(char)[]) type.
  */
-ir.ArrayType buildString(Location loc)
+ArrayType buildString(Location loc)
 {
-	auto stor = buildStorageType(loc, ir.StorageType.Kind.Immutable, buildChar(loc));
+	auto stor = buildStorageType(loc, StorageType.Kind.Immutable, buildChar(loc));
 	return buildArrayType(loc, stor);
 }
 
-ir.ArrayType buildStringArray(Location loc)
+ArrayType buildStringArray(Location loc)
 {
 	return buildArrayType(loc, buildString(loc));
 }
@@ -293,34 +293,34 @@ ir.ArrayType buildStringArray(Location loc)
 /**
  * Build a void* type.
  */
-ir.PointerType buildVoidPtr(Location loc)
+PointerType buildVoidPtr(Location loc)
 {
-	auto pt = new ir.PointerType(buildVoid(loc));
+	auto pt = new PointerType(buildVoid(loc));
 	pt.location = loc;
 
 	return pt;
 }
 
-ir.PointerType buildPtrSmart(Location loc, ir.Type base)
+PointerType buildPtrSmart(Location loc, Type base)
 {
-	auto pt = new ir.PointerType(copyTypeSmart(loc, base));
+	auto pt = new PointerType(copyTypeSmart(loc, base));
 	pt.location = loc;
 
 	return pt;
 }
 
-ir.ArrayLiteral buildArrayLiteralSmart(Location loc, ir.Type type, ir.Exp[] exps...)
+ArrayLiteral buildArrayLiteralSmart(Location loc, Type type, Exp[] exps...)
 {
-	auto literal = new ir.ArrayLiteral();
+	auto literal = new ArrayLiteral();
 	literal.location = loc;
 	literal.type = copyTypeSmart(loc, type);
 	literal.values = exps.dup;
 	return literal;
 }
 
-ir.StructLiteral buildStructLiteralSmart(Location loc, ir.Type type, ir.Exp[] exps)
+StructLiteral buildStructLiteralSmart(Location loc, Type type, Exp[] exps)
 {
-	auto literal = new ir.StructLiteral();
+	auto literal = new StructLiteral();
 	literal.location = loc;
 	literal.type = copyTypeSmart(loc, type);
 	literal.exps = exps.dup;
@@ -331,7 +331,7 @@ ir.StructLiteral buildStructLiteralSmart(Location loc, ir.Type type, ir.Exp[] ex
  * Add a Variable to the BlockStatement scope and either to
  * its statement or if StatementExp given to it instead.
  */
-void addVariable(ir.BlockStatement b, ir.StatementExp statExp, ir.Variable var)
+void addVariable(BlockStatement b, StatementExp statExp, Variable var)
 {
 	b.myScope.addValue(var, var.name);
 	if (statExp !is null) {
@@ -344,9 +344,9 @@ void addVariable(ir.BlockStatement b, ir.StatementExp statExp, ir.Variable var)
 /**
  * Build a Variable, while not being smart about its type.
  */
-ir.Variable buildVariable(Location loc, ir.Type type, ir.Variable.Storage st, string name, ir.Exp assign = null)
+Variable buildVariable(Location loc, Type type, Variable.Storage st, string name, Exp assign = null)
 {
-	auto var = new ir.Variable();
+	auto var = new Variable();
 	var.location = loc;
 	var.name = name;
 	var.type = type;
@@ -363,12 +363,12 @@ ir.Variable buildVariable(Location loc, ir.Type type, ir.Variable.Storage st, st
  * lives in as the variable will be added to its scope and generated a uniqe
  * name from its context.
  */
-ir.Variable buildVariableAnonSmart(Location loc, ir.BlockStatement b,
-                                   ir.StatementExp statExp,
-                                   ir.Type type, ir.Exp assign)
+Variable buildVariableAnonSmart(Location loc, BlockStatement b,
+                                   StatementExp statExp,
+                                   Type type, Exp assign)
 {
 	auto name = b.myScope.genAnonIdent();
-	auto var = buildVariable(loc, type, ir.Variable.Storage.Function, name, assign);
+	auto var = buildVariable(loc, type, Variable.Storage.Function, name, assign);
 	addVariable(b, statExp, var);
 	return var;
 }
@@ -377,14 +377,14 @@ ir.Variable buildVariableAnonSmart(Location loc, ir.BlockStatement b,
  * Copy a Variable, while being smart about its type, does
  * not copy the the assign exp on the Variable.
  */
-ir.Variable copyVariableSmart(Location loc, ir.Variable right)
+Variable copyVariableSmart(Location loc, Variable right)
 {
 	return buildVariable(loc, copyTypeSmart(loc, right.type), right.storage, right.name);
 }
 
-ir.Variable[] copyVariablesSmart(Location loc, ir.Variable[] vars)
+Variable[] copyVariablesSmart(Location loc, Variable[] vars)
 {
-	auto outVars = new ir.Variable[vars.length];
+	auto outVars = new Variable[vars.length];
 	foreach (i, var; vars) {
 		outVars[i] = copyVariableSmart(loc, var);
 	}
@@ -394,9 +394,9 @@ ir.Variable[] copyVariablesSmart(Location loc, ir.Variable[] vars)
 /**
  * Get ExpReferences from a list of variables.
  */
-ir.Exp[] getExpRefs(Location loc, ir.FunctionParam[] vars)
+Exp[] getExpRefs(Location loc, FunctionParam[] vars)
 {
-	auto erefs = new ir.Exp[vars.length];
+	auto erefs = new Exp[vars.length];
 	foreach (i, var; vars) {
 		erefs[i] = buildExpReference(loc, var, var.name);
 	}
@@ -406,7 +406,7 @@ ir.Exp[] getExpRefs(Location loc, ir.FunctionParam[] vars)
 /**
  * Build a Variable, while being smart about its type.
  */
-ir.Variable buildVariableSmart(Location loc, ir.Type type, ir.Variable.Storage st, string name)
+Variable buildVariableSmart(Location loc, Type type, Variable.Storage st, string name)
 {
 	return buildVariable(loc, copyTypeSmart(loc, type), st, name);
 }
@@ -414,9 +414,9 @@ ir.Variable buildVariableSmart(Location loc, ir.Type type, ir.Variable.Storage s
 /**
  * Builds a usable ExpReference.
  */
-ir.ExpReference buildExpReference(Location loc, ir.Declaration decl, string[] names...)
+ExpReference buildExpReference(Location loc, Declaration decl, string[] names...)
 {
-	auto varRef = new ir.ExpReference();
+	auto varRef = new ExpReference();
 	varRef.location = loc;
 	varRef.decl = decl;
 	varRef.idents ~= names;
@@ -427,9 +427,9 @@ ir.ExpReference buildExpReference(Location loc, ir.Declaration decl, string[] na
 /**
  * Builds a constant int.
  */
-ir.Constant buildConstantInt(Location loc, int value)
+Constant buildConstantInt(Location loc, int value)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._int = value;
 	c.type = buildInt(loc);
@@ -437,9 +437,9 @@ ir.Constant buildConstantInt(Location loc, int value)
 	return c;
 }
 
-ir.Constant buildConstantUint(Location loc, uint value)
+Constant buildConstantUint(Location loc, uint value)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._uint = value;
 	c.type = buildUint(loc);
@@ -447,9 +447,9 @@ ir.Constant buildConstantUint(Location loc, uint value)
 	return c;
 }
 
-ir.Constant buildConstantLong(Location loc, long value)
+Constant buildConstantLong(Location loc, long value)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._long = value;
 	c.type = buildLong(loc);
@@ -457,9 +457,9 @@ ir.Constant buildConstantLong(Location loc, long value)
 	return c;
 }
 
-ir.Constant buildConstantUlong(Location loc, ulong value)
+Constant buildConstantUlong(Location loc, ulong value)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._ulong = value;
 	c.type = buildUlong(loc);
@@ -470,9 +470,9 @@ ir.Constant buildConstantUlong(Location loc, ulong value)
 /**
  * Builds a constant bool.
  */
-ir.Constant buildConstantBool(Location loc, bool val)
+Constant buildConstantBool(Location loc, bool val)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._bool = val;
 	c.type = buildBool(loc);
@@ -480,9 +480,9 @@ ir.Constant buildConstantBool(Location loc, bool val)
 	return c;
 }
 
-ir.Constant buildConstantNull(Location loc, ir.Type base)
+Constant buildConstantNull(Location loc, Type base)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._pointer = null;
 	c.type = copyTypeSmart(loc, base);
@@ -494,13 +494,13 @@ ir.Constant buildConstantNull(Location loc, ir.Type base)
 /**
  * Gets a size_t Constant and fills it with a value.
  */
-ir.Constant buildSizeTConstant(Location loc, LanguagePass lp, int val)
+Constant buildSizeTConstant(Location loc, LanguagePass lp, int val)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	auto prim = lp.settings.getSizeT(loc);
 	// Uh, I assume just c._uint = val would work, but I can't test it here, so just be safe.
-	if (prim.type == ir.PrimitiveType.Kind.Ulong) {
+	if (prim.type == PrimitiveType.Kind.Ulong) {
 		c._ulong = val;
 	} else {
 		c._uint = val;
@@ -512,12 +512,12 @@ ir.Constant buildSizeTConstant(Location loc, LanguagePass lp, int val)
 /**
  * Builds a constant string.
  */
-version (none) ir.Constant buildStringConstant(Location loc, string val)
+version (none) Constant buildStringConstant(Location loc, string val)
 {
-	auto c = new ir.Constant();
+	auto c = new Constant();
 	c.location = loc;
 	c._string = val;
-	auto stor = buildStorageType(loc, ir.StorageType.Kind.Immutable, buildChar(loc));
+	auto stor = buildStorageType(loc, StorageType.Kind.Immutable, buildChar(loc));
 	canonicaliseStorageType(stor);
 	c.type = buildArrayType(loc, stor);
 	assert((c._string[$-1] == '"' || c._string[$-1] == '`') && c._string.length >= 2);
@@ -528,10 +528,10 @@ version (none) ir.Constant buildStringConstant(Location loc, string val)
 /**
  * Build a constant to insert to the IR from a resolved EnumDeclaration.
  */
-ir.Constant buildConstant(Location loc, ir.EnumDeclaration ed)
+Constant buildConstant(Location loc, EnumDeclaration ed)
 {
-	auto cnst = cast(ir.Constant) ed.assign;
-	auto c = new ir.Constant();
+	auto cnst = cast(Constant) ed.assign;
+	auto c = new Constant();
 	c.location = loc;
 	c._ulong = cnst._ulong;
 	c._string = cnst._string;
@@ -541,15 +541,15 @@ ir.Constant buildConstant(Location loc, ir.EnumDeclaration ed)
 	return c;
 }
 
-ir.Constant buildTrue(Location loc) { return buildConstantBool(loc, true); }
-ir.Constant buildFalse(Location loc) { return buildConstantBool(loc, false); }
+Constant buildTrue(Location loc) { return buildConstantBool(loc, true); }
+Constant buildFalse(Location loc) { return buildConstantBool(loc, false); }
 
 /**
  * Build a cast and sets the location, does not call copyTypeSmart.
  */
-ir.Unary buildCast(Location loc, ir.Type type, ir.Exp exp)
+Unary buildCast(Location loc, Type type, Exp exp)
 {
-	auto cst = new ir.Unary(type, exp);
+	auto cst = new Unary(type, exp);
 	cst.location = loc;
 	return cst;
 }
@@ -558,22 +558,22 @@ ir.Unary buildCast(Location loc, ir.Type type, ir.Exp exp)
  * Build a cast, sets the location and calling copyTypeSmart
  * on the type, to avoid duplicate nodes.
  */
-ir.Unary buildCastSmart(Location loc, ir.Type type, ir.Exp exp)
+Unary buildCastSmart(Location loc, Type type, Exp exp)
 {
 	return buildCast(loc, copyTypeSmart(loc, type), exp);
 }
 
-ir.Unary buildCastToBool(Location loc, ir.Exp exp) { return buildCast(loc, buildBool(loc), exp); }
-ir.Unary buildCastToVoidPtr(Location loc, ir.Exp exp) { return buildCast(loc, buildVoidPtr(loc), exp); }
+Unary buildCastToBool(Location loc, Exp exp) { return buildCast(loc, buildBool(loc), exp); }
+Unary buildCastToVoidPtr(Location loc, Exp exp) { return buildCast(loc, buildVoidPtr(loc), exp); }
 
 /**
  * Builds an AddrOf expression.
  */
-ir.Unary buildAddrOf(Location loc, ir.Exp exp)
+Unary buildAddrOf(Location loc, Exp exp)
 {
-	auto addr = new ir.Unary();
+	auto addr = new Unary();
 	addr.location = loc;
-	addr.op = ir.Unary.Op.AddrOf;
+	addr.op = Unary.Op.AddrOf;
 	addr.value = exp;
 	return addr;
 }
@@ -581,7 +581,7 @@ ir.Unary buildAddrOf(Location loc, ir.Exp exp)
 /**
  * Builds a ExpReference and a AddrOf from a Variable.
  */
-ir.Unary buildAddrOf(Location loc, ir.Variable var, string[] names...)
+Unary buildAddrOf(Location loc, Variable var, string[] names...)
 {
 	return buildAddrOf(loc, buildExpReference(loc, var, names));
 }
@@ -589,11 +589,11 @@ ir.Unary buildAddrOf(Location loc, ir.Variable var, string[] names...)
 /**
  * Builds a Dereference expression.
  */
-ir.Unary buildDeref(Location loc, ir.Exp exp)
+Unary buildDeref(Location loc, Exp exp)
 {
-	auto deref = new ir.Unary();
+	auto deref = new Unary();
 	deref.location = loc;
-	deref.op = ir.Unary.Op.Dereference;
+	deref.op = Unary.Op.Dereference;
 	deref.value = exp;
 	return deref;
 }
@@ -601,11 +601,11 @@ ir.Unary buildDeref(Location loc, ir.Exp exp)
 /**
  * Builds a New expression.
  */
-ir.Unary buildNew(Location loc, ir.Type type, string name, ir.Exp[] arguments...)
+Unary buildNew(Location loc, Type type, string name, Exp[] arguments...)
 {
-	auto new_ = new ir.Unary();
+	auto new_ = new Unary();
 	new_.location = loc;
-	new_.op = ir.Unary.Op.New;
+	new_.op = Unary.Op.New;
 	new_.type = buildTypeReference(loc, type, name);
 // 	new_.type = type;
 	new_.hasArgumentList = arguments.length > 0;
@@ -613,11 +613,11 @@ ir.Unary buildNew(Location loc, ir.Type type, string name, ir.Exp[] arguments...
 	return new_;
 }
 
-ir.Unary buildNewSmart(Location loc, ir.Type type, ir.Exp[] arguments...)
+Unary buildNewSmart(Location loc, Type type, Exp[] arguments...)
 {
-	auto new_ = new ir.Unary();
+	auto new_ = new Unary();
 	new_.location = loc;
-	new_.op = ir.Unary.Op.New;
+	new_.op = Unary.Op.New;
  	new_.type = copyTypeSmart(loc, type);
 	new_.hasArgumentList = arguments.length > 0;
 	new_.argumentList = arguments.dup;
@@ -627,9 +627,9 @@ ir.Unary buildNewSmart(Location loc, ir.Type type, ir.Exp[] arguments...)
 /**
  * Builds a typeid with type smartly.
  */
-ir.Typeid buildTypeidSmart(Location loc, ir.Type type)
+Typeid buildTypeidSmart(Location loc, Type type)
 {
-	auto t = new ir.Typeid();
+	auto t = new Typeid();
 	t.location = loc;
 	t.type = copyTypeSmart(loc, type);
 	return t;
@@ -638,13 +638,13 @@ ir.Typeid buildTypeidSmart(Location loc, ir.Type type)
 /**
  * Build a postfix Identifier expression.
  */
-ir.Postfix buildAccess(Location loc, ir.Exp exp, string name)
+Postfix buildAccess(Location loc, Exp exp, string name)
 {
-	auto access = new ir.Postfix();
+	auto access = new Postfix();
 	access.location = loc;
-	access.op = ir.Postfix.Op.Identifier;
+	access.op = Postfix.Op.Identifier;
 	access.child = exp;
-	access.identifier = new ir.Identifier();
+	access.identifier = new Identifier();
 	access.identifier.location = loc;
 	access.identifier.value = name;
 
@@ -654,11 +654,11 @@ ir.Postfix buildAccess(Location loc, ir.Exp exp, string name)
 /**
  * Builds a postfix slice.
  */
-ir.Postfix buildSlice(Location loc, ir.Exp child, ir.Exp[] args...)
+Postfix buildSlice(Location loc, Exp child, Exp[] args...)
 {
-	auto slice = new ir.Postfix();
+	auto slice = new Postfix();
 	slice.location = loc;
-	slice.op = ir.Postfix.Op.Slice;
+	slice.op = Postfix.Op.Slice;
 	slice.child = child;
 	slice.arguments = args.dup;
 
@@ -668,11 +668,11 @@ ir.Postfix buildSlice(Location loc, ir.Exp child, ir.Exp[] args...)
 /**
  * Builds a postfix index.
  */
-ir.Postfix buildIndex(Location loc, ir.Exp child, ir.Exp arg)
+Postfix buildIndex(Location loc, Exp child, Exp arg)
 {
-	auto slice = new ir.Postfix();
+	auto slice = new Postfix();
 	slice.location = loc;
-	slice.op = ir.Postfix.Op.Index;
+	slice.op = Postfix.Op.Index;
 	slice.child = child;
 	slice.arguments ~= arg;
 
@@ -682,42 +682,42 @@ ir.Postfix buildIndex(Location loc, ir.Exp child, ir.Exp arg)
 /**
  * Builds a postfix call.
  */
-ir.Postfix buildCall(Location loc, ir.Exp child, ir.Exp[] args)
+Postfix buildCall(Location loc, Exp child, Exp[] args)
 {
-	auto call = new ir.Postfix();
+	auto call = new Postfix();
 	call.location = loc;
-	call.op = ir.Postfix.Op.Call;
+	call.op = Postfix.Op.Call;
 	call.child = child;
 	call.arguments = args.dup;
 
 	return call;
 }
 
-ir.Postfix buildMemberCall(Location loc, ir.Exp child, ir.ExpReference fn, string name, ir.Exp[] args)
+Postfix buildMemberCall(Location loc, Exp child, ExpReference fn, string name, Exp[] args)
 {
-	auto lookup = new ir.Postfix();
+	auto lookup = new Postfix();
 	lookup.location = loc;
-	lookup.op = ir.Postfix.Op.CreateDelegate;
+	lookup.op = Postfix.Op.CreateDelegate;
 	lookup.child = child;
-	lookup.identifier = new ir.Identifier();
+	lookup.identifier = new Identifier();
 	lookup.identifier.location = loc;
 	lookup.identifier.value = name;
 	lookup.memberFunction = fn;
 
-	auto call = new ir.Postfix();
+	auto call = new Postfix();
 	call.location = loc;
-	call.op = ir.Postfix.Op.Call;
+	call.op = Postfix.Op.Call;
 	call.child = lookup;
 	call.arguments = args;
 
 	return call;
 }
 
-ir.Postfix buildCreateDelegate(Location loc, ir.Exp child, ir.ExpReference fn)
+Postfix buildCreateDelegate(Location loc, Exp child, ExpReference fn)
 {
-	auto postfix = new ir.Postfix();
+	auto postfix = new Postfix();
 	postfix.location = loc;
-	postfix.op = ir.Postfix.Op.CreateDelegate;
+	postfix.op = Postfix.Op.CreateDelegate;
 	postfix.child = child;
 	postfix.memberFunction = fn;
 	return postfix;
@@ -726,7 +726,7 @@ ir.Postfix buildCreateDelegate(Location loc, ir.Exp child, ir.ExpReference fn)
 /**
  * Builds a postfix call.
  */
-ir.Postfix buildCall(Location loc, ir.Declaration decl, ir.Exp[] args, string[] names...)
+Postfix buildCall(Location loc, Declaration decl, Exp[] args, string[] names...)
 {
 	return buildCall(loc, buildExpReference(loc, decl, names), args);
 }
@@ -735,33 +735,33 @@ ir.Postfix buildCall(Location loc, ir.Declaration decl, ir.Exp[] args, string[] 
 /**
  * Builds an add BinOp.
  */
-ir.BinOp buildAdd(Location loc, ir.Exp left, ir.Exp right)
+BinOp buildAdd(Location loc, Exp left, Exp right)
 {
-	return buildBinOp(loc, ir.BinOp.Op.Add, left, right);
+	return buildBinOp(loc, BinOp.Op.Add, left, right);
 }
 
 /**
  * Builds an assign BinOp.
  */
-ir.BinOp buildAssign(Location loc, ir.Exp left, ir.Exp right)
+BinOp buildAssign(Location loc, Exp left, Exp right)
 {
-	return buildBinOp(loc, ir.BinOp.Op.Assign, left, right);
+	return buildBinOp(loc, BinOp.Op.Assign, left, right);
 }
 
 /**
  * Builds an add-assign BinOp.
  */
-ir.BinOp buildAddAssign(Location loc, ir.Exp left, ir.Exp right)
+BinOp buildAddAssign(Location loc, Exp left, Exp right)
 {
-	return buildBinOp(loc, ir.BinOp.Op.AddAssign, left, right);
+	return buildBinOp(loc, BinOp.Op.AddAssign, left, right);
 }
 
 /**
  * Builds an BinOp.
  */
-ir.BinOp buildBinOp(Location loc, ir.BinOp.Op op, ir.Exp left, ir.Exp right)
+BinOp buildBinOp(Location loc, BinOp.Op op, Exp left, Exp right)
 {
-	auto binop = new ir.BinOp();
+	auto binop = new BinOp();
 	binop.location = loc;
 	binop.op = op;
 	binop.left = left;
@@ -769,14 +769,14 @@ ir.BinOp buildBinOp(Location loc, ir.BinOp.Op op, ir.Exp left, ir.Exp right)
 	return binop;
 }
 
-ir.StatementExp buildStatementExp(Location loc)
+StatementExp buildStatementExp(Location loc)
 {
-	auto stateExp = new ir.StatementExp();
+	auto stateExp = new StatementExp();
 	stateExp.location = loc;
 	return stateExp;
 }
 
-ir.StatementExp buildStatementExp(Location loc, ir.Node[] stats, ir.Exp exp)
+StatementExp buildStatementExp(Location loc, Node[] stats, Exp exp)
 {
 	auto stateExp = buildStatementExp(loc);
 	stateExp.statements = stats;
@@ -784,9 +784,9 @@ ir.StatementExp buildStatementExp(Location loc, ir.Node[] stats, ir.Exp exp)
 	return stateExp;
 }
 
-ir.FunctionParam buildFunctionParam(Location loc, size_t index, string name, ir.Function fn)
+FunctionParam buildFunctionParam(Location loc, size_t index, string name, Function fn)
 {
-	auto fparam = new ir.FunctionParam();
+	auto fparam = new FunctionParam();
 	fparam.location = loc;
 	fparam.index = index;
 	fparam.name = name;
@@ -797,7 +797,7 @@ ir.FunctionParam buildFunctionParam(Location loc, size_t index, string name, ir.
 /**
  * Adds a variable argument to a function, also adds it to the scope.
  */
-ir.FunctionParam addParam(Location loc, ir.Function fn, ir.Type type, string name)
+FunctionParam addParam(Location loc, Function fn, Type type, string name)
 {
 	auto var = buildFunctionParam(loc, fn.type.params.length, name, fn);
 
@@ -812,7 +812,7 @@ ir.FunctionParam addParam(Location loc, ir.Function fn, ir.Type type, string nam
 /**
  * Adds a variable argument to a function, also adds it to the scope.
  */
-ir.FunctionParam addParamSmart(Location loc, ir.Function fn, ir.Type type, string name)
+FunctionParam addParamSmart(Location loc, Function fn, Type type, string name)
 {
 	return addParam(loc, fn, copyTypeSmart(loc, type), name);
 }
@@ -821,9 +821,9 @@ ir.FunctionParam addParamSmart(Location loc, ir.Function fn, ir.Type type, strin
  * Builds a variable statement smartly, inserting at the end of the
  * block statements and inserting it in the scope.
  */
-ir.Variable buildVarStatSmart(Location loc, ir.BlockStatement block, ir.Scope _scope, ir.Type type, string name)
+Variable buildVarStatSmart(Location loc, BlockStatement block, Scope _scope, Type type, string name)
 {
-	auto var = buildVariableSmart(loc, type, ir.Variable.Storage.Function, name);
+	auto var = buildVariableSmart(loc, type, Variable.Storage.Function, name);
 	block.statements ~= var;
 	_scope.addValue(var, name);
 	return var;
@@ -832,9 +832,9 @@ ir.Variable buildVarStatSmart(Location loc, ir.BlockStatement block, ir.Scope _s
 /**
  * Build an exp statement and add it to a StatementExp.
  */
-ir.ExpStatement buildExpStat(Location loc, ir.StatementExp stat, ir.Exp exp)
+ExpStatement buildExpStat(Location loc, StatementExp stat, Exp exp)
 {
-	auto ret = new ir.ExpStatement();
+	auto ret = new ExpStatement();
 	ret.location = loc;
 	ret.exp = exp;
 
@@ -843,16 +843,16 @@ ir.ExpStatement buildExpStat(Location loc, ir.StatementExp stat, ir.Exp exp)
 	return ret;
 }
 
-ir.StatementExp buildVaArgCast(Location loc, ir.VaArgExp vaexp)
+StatementExp buildVaArgCast(Location loc, VaArgExp vaexp)
 {
-	auto sexp = new ir.StatementExp();
+	auto sexp = new StatementExp();
 	sexp.location = loc;
 
-	auto ptrToPtr = buildVariableSmart(loc, buildPtrSmart(loc, buildVoidPtr(loc)), ir.Variable.Storage.Function, "ptrToPtr");
+	auto ptrToPtr = buildVariableSmart(loc, buildPtrSmart(loc, buildVoidPtr(loc)), Variable.Storage.Function, "ptrToPtr");
 	ptrToPtr.assign = buildAddrOf(loc, vaexp.arg);
 	sexp.statements ~= ptrToPtr;
 
-	auto cpy = buildVariableSmart(loc, buildVoidPtr(loc), ir.Variable.Storage.Function, "cpy");
+	auto cpy = buildVariableSmart(loc, buildVoidPtr(loc), Variable.Storage.Function, "cpy");
 	cpy.assign = buildDeref(loc, buildExpReference(loc, ptrToPtr));
 	sexp.statements ~= cpy;
 
@@ -870,22 +870,22 @@ ir.StatementExp buildVaArgCast(Location loc, ir.VaArgExp vaexp)
 	return sexp;
 }
 
-ir.Exp buildVaArgStart(Location loc, ir.Exp vlexp, ir.Exp argexp)
+Exp buildVaArgStart(Location loc, Exp vlexp, Exp argexp)
 {
 	return buildAssign(loc, buildDeref(loc, vlexp), argexp);
 }
 
-ir.Exp buildVaArgEnd(Location loc, ir.Exp vlexp)
+Exp buildVaArgEnd(Location loc, Exp vlexp)
 {
 	return buildAssign(loc, buildDeref(loc, vlexp), buildConstantNull(loc, buildVoidPtr(loc)));
 }
 
-ir.StatementExp buildInternalArrayLiteralSmart(Location loc, ir.Type atype, ir.Exp[] exps)
+StatementExp buildInternalArrayLiteralSmart(Location loc, Type atype, Exp[] exps)
 {
-	assert(atype.nodeType == ir.NodeType.ArrayType);
-	auto sexp = new ir.StatementExp();
+	assert(atype.nodeType == NodeType.ArrayType);
+	auto sexp = new StatementExp();
 	sexp.location = loc;
-	auto var = buildVariableSmart(loc, copyTypeSmart(loc, atype), ir.Variable.Storage.Function, "array");
+	auto var = buildVariableSmart(loc, copyTypeSmart(loc, atype), Variable.Storage.Function, "array");
 	sexp.statements ~= var;
 	auto _new = buildNewSmart(loc, atype, buildConstantUint(loc, cast(uint) exps.length));
 	auto vassign = buildAssign(loc, buildExpReference(loc, var), _new);
@@ -899,12 +899,12 @@ ir.StatementExp buildInternalArrayLiteralSmart(Location loc, ir.Type atype, ir.E
 	return sexp;
 }
 
-ir.StatementExp buildInternalArrayLiteralSliceSmart(Location loc, ir.Type atype, ir.Type[] types, int[] sizes, int totalSize, ir.Function memcpyFn, ir.Exp[] exps)
+StatementExp buildInternalArrayLiteralSliceSmart(Location loc, Type atype, Type[] types, int[] sizes, int totalSize, Function memcpyFn, Exp[] exps)
 {
-	assert(atype.nodeType == ir.NodeType.ArrayType);
-	auto sexp = new ir.StatementExp();
+	assert(atype.nodeType == NodeType.ArrayType);
+	auto sexp = new StatementExp();
 	sexp.location = loc;
-	auto var = buildVariableSmart(loc, copyTypeSmart(loc, atype), ir.Variable.Storage.Function, "array");
+	auto var = buildVariableSmart(loc, copyTypeSmart(loc, atype), Variable.Storage.Function, "array");
 
 	sexp.statements ~= var;
 	auto _new = buildNewSmart(loc, atype, buildConstantUint(loc, cast(uint) totalSize));
@@ -913,16 +913,16 @@ ir.StatementExp buildInternalArrayLiteralSliceSmart(Location loc, ir.Type atype,
 
 	int offset;
 	foreach (i, exp; exps) {
-		auto evar = buildVariableSmart(loc, types[i], ir.Variable.Storage.Function, "exp"); 
+		auto evar = buildVariableSmart(loc, types[i], Variable.Storage.Function, "exp"); 
 		sexp.statements ~= evar;
 		auto evassign = buildAssign(loc, buildExpReference(loc, evar), exp);
 		buildExpStat(loc, sexp, evassign);
 
-		ir.Exp dst = buildAdd(loc, buildAccess(loc, buildExpReference(loc, var), "ptr"), buildConstantUint(loc, offset));
-		ir.Exp src = buildCastToVoidPtr(loc, buildAddrOf(loc, buildExpReference(loc, evar)));
-		ir.Exp len = buildConstantUint(loc, cast(uint) sizes[i]);
-		ir.Exp aln = buildConstantInt(loc, 0);
-		ir.Exp vol = buildConstantBool(loc, false);
+		Exp dst = buildAdd(loc, buildAccess(loc, buildExpReference(loc, var), "ptr"), buildConstantUint(loc, offset));
+		Exp src = buildCastToVoidPtr(loc, buildAddrOf(loc, buildExpReference(loc, evar)));
+		Exp len = buildConstantUint(loc, cast(uint) sizes[i]);
+		Exp aln = buildConstantInt(loc, 0);
+		Exp vol = buildConstantBool(loc, false);
 		auto call = buildCall(loc, buildExpReference(loc, memcpyFn), [dst, src, len, aln, vol]);
 		buildExpStat(loc, sexp, call);
 		offset += sizes[i];
@@ -933,9 +933,9 @@ ir.StatementExp buildInternalArrayLiteralSliceSmart(Location loc, ir.Type atype,
 /**
  * Build an exp statement and add it to a block.
  */
-ir.ExpStatement buildExpStat(Location loc, ir.BlockStatement block, ir.Exp exp)
+ExpStatement buildExpStat(Location loc, BlockStatement block, Exp exp)
 {
-	auto ret = new ir.ExpStatement();
+	auto ret = new ExpStatement();
 	ret.location = loc;
 	ret.exp = exp;
 
@@ -948,9 +948,9 @@ ir.ExpStatement buildExpStat(Location loc, ir.BlockStatement block, ir.Exp exp)
 /**
  * Build an exp statement without inserting it anywhere.
  */
-ir.ExpStatement buildExpStat(Location loc, ir.Exp exp)
+ExpStatement buildExpStat(Location loc, Exp exp)
 {
-	auto ret = new ir.ExpStatement();
+	auto ret = new ExpStatement();
 	ret.location = loc;
 	ret.exp = exp;
 	return ret;
@@ -960,10 +960,10 @@ ir.ExpStatement buildExpStat(Location loc, ir.Exp exp)
 /**
  * Build an if statement.
  */
-ir.IfStatement buildIfStat(Location loc, ir.BlockStatement block, ir.Exp exp,
-                           ir.BlockStatement thenState, ir.BlockStatement elseState = null, string autoName = "")
+IfStatement buildIfStat(Location loc, BlockStatement block, Exp exp,
+                           BlockStatement thenState, BlockStatement elseState = null, string autoName = "")
 {
-	auto ret = new ir.IfStatement();
+	auto ret = new IfStatement();
 	ret.location = loc;
 	ret.exp = exp;
 	ret.thenState = thenState;
@@ -978,10 +978,10 @@ ir.IfStatement buildIfStat(Location loc, ir.BlockStatement block, ir.Exp exp,
 /**
  * Build an if statement.
  */
-ir.IfStatement buildIfStat(Location loc, ir.StatementExp statExp, ir.Exp exp,
-                           ir.BlockStatement thenState, ir.BlockStatement elseState = null, string autoName = "")
+IfStatement buildIfStat(Location loc, StatementExp statExp, Exp exp,
+                           BlockStatement thenState, BlockStatement elseState = null, string autoName = "")
 {
-	auto ret = new ir.IfStatement();
+	auto ret = new IfStatement();
 	ret.location = loc;
 	ret.exp = exp;
 	ret.thenState = thenState;
@@ -996,12 +996,12 @@ ir.IfStatement buildIfStat(Location loc, ir.StatementExp statExp, ir.Exp exp,
 /**
  * Build a block statement.
  */
-ir.BlockStatement buildBlockStat(Location loc, ir.Node introducingNode, ir.Scope _scope, ir.Node[] statements...)
+BlockStatement buildBlockStat(Location loc, Node introducingNode, Scope _scope, Node[] statements...)
 {
-	auto ret = new ir.BlockStatement();
+	auto ret = new BlockStatement();
 	ret.location = loc;
 	ret.statements = statements;
-	ret.myScope = new ir.Scope(_scope, introducingNode, "block");
+	ret.myScope = new Scope(_scope, introducingNode, "block");
 
 	return ret;
 }
@@ -1010,9 +1010,9 @@ ir.BlockStatement buildBlockStat(Location loc, ir.Node introducingNode, ir.Scope
 /**
  * Build a return statement.
  */
-ir.ReturnStatement buildReturnStat(Location loc, ir.BlockStatement block, ir.Exp exp = null)
+ReturnStatement buildReturnStat(Location loc, BlockStatement block, Exp exp = null)
 {
-	auto ret = new ir.ReturnStatement();
+	auto ret = new ReturnStatement();
 	ret.location = loc;
 	ret.exp = exp;
 
@@ -1025,23 +1025,23 @@ ir.ReturnStatement buildReturnStat(Location loc, ir.BlockStatement block, ir.Exp
  * Builds a completely useable Function and insert it into the
  * various places it needs to be inserted.
  */
-ir.Function buildFunction(Location loc, ir.TopLevelBlock tlb, ir.Scope _scope, string name, bool buildBody = true)
+Function buildFunction(Location loc, TopLevelBlock tlb, Scope _scope, string name, bool buildBody = true)
 {
-	auto fn = new ir.Function();
+	auto fn = new Function();
 	fn.name = name;
 	fn.location = loc;
-	fn.kind = ir.Function.Kind.Function;
-	fn.myScope = new ir.Scope(_scope, fn, fn.name);
+	fn.kind = Function.Kind.Function;
+	fn.myScope = new Scope(_scope, fn, fn.name);
 
-	fn.type = new ir.FunctionType();
+	fn.type = new FunctionType();
 	fn.type.location = loc;
-	fn.type.ret = new ir.PrimitiveType(ir.PrimitiveType.Kind.Void);
+	fn.type.ret = new PrimitiveType(PrimitiveType.Kind.Void);
 	fn.type.ret.location = loc;
 
 	if (buildBody) {
-		fn._body = new ir.BlockStatement();
+		fn._body = new BlockStatement();
 		fn._body.location = loc;
-		fn._body.myScope = new ir.Scope(fn.myScope, fn._body, name);
+		fn._body.myScope = new Scope(fn.myScope, fn._body, name);
 	}
 
 	// Insert the struct into all the places.
@@ -1053,9 +1053,9 @@ ir.Function buildFunction(Location loc, ir.TopLevelBlock tlb, ir.Scope _scope, s
 /**
  * Builds a alias from a string and a Identifier.
  */
-ir.Alias buildAliasSmart(Location loc, string name, ir.Identifier i)
+Alias buildAliasSmart(Location loc, string name, Identifier i)
 {
-	auto a = new ir.Alias();
+	auto a = new Alias();
 	a.name = name;
 	a.location = loc;
 	a.id = buildQualifiedNameSmart(i);
@@ -1065,9 +1065,9 @@ ir.Alias buildAliasSmart(Location loc, string name, ir.Identifier i)
 /**
  * Builds a alias from two strings.
  */
-ir.Alias buildAlias(Location loc, string name, string from)
+Alias buildAlias(Location loc, string name, string from)
 {
-	auto a = new ir.Alias();
+	auto a = new Alias();
 	a.name = name;
 	a.location = loc;
 	a.id = buildQualifiedName(loc, from);
@@ -1080,14 +1080,14 @@ ir.Alias buildAlias(Location loc, string name, string from)
  *
  * The members list is used directly in the new struct; be wary not to duplicate IR nodes.
  */
-ir.Struct buildStruct(Location loc, ir.TopLevelBlock tlb, ir.Scope _scope, string name, ir.Variable[] members...)
+Struct buildStruct(Location loc, TopLevelBlock tlb, Scope _scope, string name, Variable[] members...)
 {
-	auto s = new ir.Struct();
+	auto s = new Struct();
 	s.name = name;
-	s.myScope = new ir.Scope(_scope, s, name);
+	s.myScope = new Scope(_scope, s, name);
 	s.location = loc;
 
-	s.members = new ir.TopLevelBlock();
+	s.members = new TopLevelBlock();
 	s.members.location = loc;
 
 	foreach (member; members) {
@@ -1105,13 +1105,13 @@ ir.Struct buildStruct(Location loc, ir.TopLevelBlock tlb, ir.Scope _scope, strin
  * Builds an IR complete, but semantically unfinished struct. i.e. it has no scope and isn't inserted anywhere.
  * The members list is used directly in the new struct; be wary not to duplicate IR nodes.
  */
-ir.Struct buildStruct(Location loc, string name, ir.Variable[] members...)
+Struct buildStruct(Location loc, string name, Variable[] members...)
 {
-	auto s = new ir.Struct();
+	auto s = new Struct();
 	s.name = name;
 	s.location = loc;
 
-	s.members = new ir.TopLevelBlock();
+	s.members = new TopLevelBlock();
 	s.members.location = loc;
 
 	foreach (member; members) {
@@ -1124,9 +1124,9 @@ ir.Struct buildStruct(Location loc, string name, ir.Variable[] members...)
 /**
  * Add a variable to a pre-built struct.
  */
-void addVarToStructSmart(ir.Struct _struct, ir.Variable var)
+void addVarToStructSmart(Struct _struct, Variable var)
 {
-	auto cvar = buildVariableSmart(var.location, var.type, ir.Variable.Storage.Field, var.name);
+	auto cvar = buildVariableSmart(var.location, var.type, Variable.Storage.Field, var.name);
 	_struct.members.nodes ~= cvar;
 	_struct.myScope.addValue(cvar, cvar.name);
 }
@@ -1135,32 +1135,32 @@ void addVarToStructSmart(ir.Struct _struct, ir.Variable var)
  * If t is a class, or a typereference to a class, returns the
  * class. Otherwise, returns null.
  */
-ir.Class getClass(ir.Type t)
+Class getClass(Type t)
 {
-	auto asClass = cast(ir.Class) t;
+	auto asClass = cast(Class) t;
 	if (asClass !is null) {
 		return asClass;
 	}
-	auto asTR = cast(ir.TypeReference) t;
+	auto asTR = cast(TypeReference) t;
 	if (asTR is null) {
 		return null;
 	}
-	asClass = cast(ir.Class) asTR.type;
+	asClass = cast(Class) asTR.type;
 	return asClass;
 }
 
-ir.Type buildStaticArrayTypeSmart(Location loc, size_t length, ir.Type base)
+Type buildStaticArrayTypeSmart(Location loc, size_t length, Type base)
 {
-	auto sa = new ir.StaticArrayType();
+	auto sa = new StaticArrayType();
 	sa.location = loc;
 	sa.length = length;
 	sa.base = copyTypeSmart(loc, base);
 	return sa;
 }
 
-ir.Type buildAATypeSmart(Location loc, ir.Type key, ir.Type value)
+Type buildAATypeSmart(Location loc, Type key, Type value)
 {
-	auto aa = new ir.AAType();
+	auto aa = new AAType();
 	aa.location = loc;
 	aa.key = copyTypeSmart(loc, key);
 	aa.value = copyTypeSmart(loc, value);
@@ -1170,33 +1170,33 @@ ir.Type buildAATypeSmart(Location loc, ir.Type key, ir.Type value)
 /*
  * Functions who takes the location from the given exp.
  */
-ir.Unary buildCastSmart(ir.Type type, ir.Exp exp) { return buildCastSmart(exp.location, type, exp); }
-ir.Unary buildAddrOf(ir.Exp exp) { return buildAddrOf(exp.location, exp); }
-ir.Unary buildCastToBool(ir.Exp exp) { return buildCastToBool(exp.location, exp); }
+Unary buildCastSmart(Type type, Exp exp) { return buildCastSmart(exp.location, type, exp); }
+Unary buildAddrOf(Exp exp) { return buildAddrOf(exp.location, exp); }
+Unary buildCastToBool(Exp exp) { return buildCastToBool(exp.location, exp); }
 
-ir.Type buildSetType(Location loc, ir.Function[] functions)
+Type buildSetType(Location loc, Function[] functions)
 {
 	assert(functions.length > 0);
 	if (functions.length == 1) {
 		return functions[0].type;
 	}
 
-	auto set = new ir.FunctionSetType();
+	auto set = new FunctionSetType();
 	set.location = loc;
-	set.set = cast(ir.FunctionSet) buildSet(loc, functions);
+	set.set = cast(FunctionSet) buildSet(loc, functions);
 	assert(set.set !is null);
 	assert(set.set.functions.length > 0);
 	return set;
 }
 
-ir.Declaration buildSet(Location loc, ir.Function[] functions, ir.ExpReference eref = null)
+Declaration buildSet(Location loc, Function[] functions, ExpReference eref = null)
 {
 	assert(functions.length > 0);
 	if (functions.length == 1) {
 		return functions[0];
 	}
 
-	auto set = new ir.FunctionSet();
+	auto set = new FunctionSet();
 	set.functions = functions;
 	set.location = loc;
 	set.reference = eref;
@@ -1204,38 +1204,38 @@ ir.Declaration buildSet(Location loc, ir.Function[] functions, ir.ExpReference e
 	return set;
 }
 
-ir.Type stripStorage(ir.Type type)
+Type stripStorage(Type type)
 {
-	auto storage = cast(ir.StorageType) type;
+	auto storage = cast(StorageType) type;
 	while (storage !is null) {
 		type = storage.base;
-		storage = cast(ir.StorageType) type;
+		storage = cast(StorageType) type;
 	}
 	return type;
 }
 
-ir.Type deepStripStorage(ir.Type type)
+Type deepStripStorage(Type type)
 {
-	auto ptr = cast(ir.PointerType) type;
+	auto ptr = cast(PointerType) type;
 	if (ptr !is null) {
 		ptr.base = deepStripStorage(ptr.base);
 		return ptr;
 	}
 
-	auto arr = cast(ir.ArrayType) type;
+	auto arr = cast(ArrayType) type;
 	if (arr !is null) {
 		arr.base = deepStripStorage(arr.base);
 		return arr;
 	}
 
-	auto aa = cast(ir.AAType) type;
+	auto aa = cast(AAType) type;
 	if (aa !is null) {
 		aa.value = deepStripStorage(aa.value);
 		aa.key = deepStripStorage(aa.key);
 		return aa;
 	}
 
-	auto ct = cast(ir.CallableType) type;
+	auto ct = cast(CallableType) type;
 	if (ct !is null) {
 		ct.ret = deepStripStorage(ct.ret);
 		foreach (ref param; ct.params) {
@@ -1244,7 +1244,7 @@ ir.Type deepStripStorage(ir.Type type)
 		return ct;
 	}
 
-	auto storage = cast(ir.StorageType) type;
+	auto storage = cast(StorageType) type;
 	if (storage !is null) {
 		storage.base = stripStorage(storage.base);
 		return storage.base;
@@ -1254,12 +1254,12 @@ ir.Type deepStripStorage(ir.Type type)
 }
 
 /// Returns the base of consecutive pointers. e.g. 'int***' returns 'int'.
-ir.Type realBase(ir.PointerType ptr)
+Type realBase(PointerType ptr)
 {
-	ir.Type base;
+	Type base;
 	do {
 		base = ptr.base;
-		ptr = cast(ir.PointerType) base;
+		ptr = cast(PointerType) base;
 	} while (ptr !is null);
 	return base;
 }

@@ -288,7 +288,7 @@ public:
 		location = ctype.location;
 		linkage = ctype.linkage;
 		ret = ctype.ret;
-		params = ctype.params.dup;
+		params = ctype.params;//ctype.params.dup;
 		hiddenParameter = ctype.hiddenParameter;
 		isScope = ctype.isScope;
 		hasVarArgs = ctype.hasVarArgs;
@@ -362,7 +362,7 @@ class DelegateType : CallableType
 public:
 	this()
 	out {
-		assert(this.hiddenParameter);
+		//assert(this.hiddenParameter);
 	}
 	body {
 		super(NodeType.DelegateType);
@@ -371,7 +371,7 @@ public:
 
 	this(CallableType ctype)
 	out {
-		assert(this.hiddenParameter);
+		//assert(this.hiddenParameter);
 	}
 	body {
 		super(NodeType.DelegateType, ctype);
@@ -403,7 +403,7 @@ public:
  *  
  * (If the result is auto(T), the type becomes T)
  *    
- * Otherwise, the following assertions hold:
+ * Otherwise, the following //assertions hold:
  *   There are no duplicate storage types.
  *   auto is not in the list.
  *   there may be immutable, const, inout, but only one.

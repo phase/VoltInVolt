@@ -180,7 +180,7 @@ abstract class Node
 {
 public:
 	/// Where in the source this Node was defined, for diagnostic purposes.
-	//Location location;
+	Location location;
 
 	/// Retrieve the NodeType for this Node.
 	@property NodeType nodeType() { return mNodeType; }

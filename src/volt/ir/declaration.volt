@@ -263,7 +263,7 @@ public:
 	 */
 	bool isWeakLink;
 
-	int vtableIndex = -1;  ///< If this is a member function, where in the vtable does it live?
+	int vtableIndex;// = -1;  ///< If this is a member function, where in the vtable does it live?
 
 	/// True if this function has an explicit call to super in
 	bool explicitCallToSuper;
@@ -324,7 +324,7 @@ public:
 	 */
 	Function resolved(Function fn)
 	{
-		assert(reference !is null);
+		//assert(reference !is null);
 		reference.decl = fn;
 		functions = null;
 		reference = null;
@@ -357,7 +357,7 @@ public:
 
 	@property Type type()
 	{
-		assert(fn !is null);
+		//assert(fn !is null);
 		return fn.type.params[index];
 	}
 }

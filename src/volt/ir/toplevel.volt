@@ -129,7 +129,7 @@ class Import : Node
 {
 public:
 	/// public, private, package or protected.
-	Access access = Access.Private;
+	Access access;// = Access.Private;
 
 	/// Optional
 	bool isStatic;

@@ -472,13 +472,13 @@ public:
 	Declaration[] getNestedDeclarations()
 	{
 		Declaration[] variables;
-		for (size_t i = 0; i < symbols.values.length; i++) {
-			auto store = symbols.values[i];
-			auto variable = cast(ir.Variable) store.node;
+		for (size_t i = 0; i < /*symbols.values.length*/3; i++) {
+			auto store = symbols["dummy"];//symbols.values[i];
+			auto variable = cast(Variable) store.node;
 			if (variable is null || variable.storage != Variable.Storage.Nested) {
 				continue;
 			}
-			variables ~= variable;
+			//variables ~= variable;
 		}
 		return variables;
 	}
