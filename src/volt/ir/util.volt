@@ -59,40 +59,40 @@ QualifiedName buildQualifiedNameSmart(Identifier i)
 Scope getScopeFromType(Type type)
 {
 	switch (type.nodeType) with (NodeType) {
-	case TypeReference:
+	case ir.NodeType.TypeReference:
 		auto asTypeRef = cast(TypeReference) type;
 		assert(asTypeRef !is null);
 		assert(asTypeRef.type !is null);
 		return getScopeFromType(asTypeRef.type);
-	case ArrayType:
+	case ir.NodeType.ArrayType:
 		auto asArray = cast(ArrayType) type;
 		assert(asArray !is null);
 		return getScopeFromType(asArray.base);
-	case PointerType:
+	case ir.NodeType.PointerType:
 		auto asPointer = cast(PointerType) type;
 		assert(asPointer !is null);
 		return getScopeFromType(asPointer.base);
-	case Struct:
+	case ir.NodeType.Struct:
 		auto asStruct = cast(Struct) type;
 		assert(asStruct !is null);
 		return asStruct.myScope;
-	case Union:
+	case ir.NodeType.Union:
 		auto asUnion = cast(Union) type;
 		assert(asUnion !is null);
 		return asUnion.myScope;
-	case Class:
+	case ir.NodeType.Class:
 		auto asClass = cast(Class) type;
 		assert(asClass !is null);
 		return asClass.myScope;
-	case Interface:
+	case ir.NodeType.Interface:
 		auto asInterface = cast(_Interface) type;
 		assert(asInterface !is null);
 		return asInterface.myScope;
-	case UserAttribute:
+	case ir.NodeType.UserAttribute:
 		auto asAttr = cast(UserAttribute) type;
 		assert(asAttr !is null);
 		return asAttr.myScope;
-	case Enum:
+	case ir.NodeType.Enum:
 		auto asEnum = cast(Enum) type;
 		assert(asEnum !is null);
 		return asEnum.myScope;
