@@ -85,8 +85,7 @@ public:
 	 */
 	int opEquals(TokenType[] types)
 	{
-		for (uint i = 0; i < types.length; i++) {
-			auto right = types[i];
+		foreach(uint i, right; types) {
 			TokenType left = lookahead(i).type;
 			if (left != right)
 				return 0;

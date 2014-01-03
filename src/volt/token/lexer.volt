@@ -341,8 +341,7 @@ bool lexSpecialToken(TokenWriter tw, Token token)
 
 bool lexSymbol(TokenWriter tw)
 {
-	dchar c = tw.source.current;
-	switch (c) {
+	switch (tw.source.current) {
 	case '/':
 		return lexSlash(tw);
 	case '.':
