@@ -1,4 +1,5 @@
 module volt.util.string;
+version (none):
 
 import volt.errors;
 import volt.token.location;
@@ -136,7 +137,7 @@ void[] unescapeString(Location location, const char[] s)
 		throw makeExpected(location, "valid escape.");
 	}
 
-	return output;
+	return cast(void[]) output;
 }
 
 /+ void[] unescape(T)(Location location, const T[] s)
