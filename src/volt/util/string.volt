@@ -1,8 +1,10 @@
 module volt.util.string;
-version (none):
 
 import volt.errors;
 import volt.token.location;
+
+import watt.conv;
+import watt.text.utf;
 
 //alias unescape!char unescapeString;
 //alias unescape!wchar unescapeWstring;
@@ -27,31 +29,29 @@ void[] unescapeString(Location location, const char[] s)
 	char[] output;
 
 	bool escaping, hexing, unicoding;
-	dchar[] hexchars;
+	char[] hexchars;
 	foreach (c; s) {
 		// \uXXXX
 		if (unicoding) {
 			if (!isHex(c)) {
 				if (hexchars.length == 4) {
 					ushort i;
-					try {
-						//i = parse!ushort(hexchars, 16);
-						i = 42;
-					} catch (ConvException) {
-						throw makeExpected(location, "unicode codepoint specification");
-					}
-					encode(output, i);
+					//try {
+						i = cast(ushort) toInt(hexchars, 16);
+					//} catch (ConvException) {
+					//	throw makeExpected(location, "unicode codepoint specification");
+					//}
+					encode(ref output, i);
 					unicoding = false;
 					continue;
 				} else if (hexchars.length == 8) {
 					uint i;
-					try {
-						//i = parse!uint(hexchars, 16);
-						i = 42;
-					} catch (ConvException) {
-						throw makeExpected(location, "unicode codepoint specification");
-					}
-					encode(output, i);
+					//try {
+						i = cast(uint) toInt(hexchars, 16);
+					//} catch (ConvException) {
+					//	throw makeExpected(location, "unicode codepoint specification");
+					//}
+					encode(ref output, i);
 					unicoding = false;
 					continue;
 				} else { 
@@ -60,13 +60,12 @@ void[] unescapeString(Location location, const char[] s)
 			}
 			if (hexchars.length == 8) {
 				uint i;
-				try {
-					//i = parse!uint(hexchars, 16);
-					i = 42;
-				} catch (ConvException) {
-					throw makeExpected(location, "unicode codepoint specification");
-				}
-				encode(output, i);
+				//try {
+					i = cast(uint) toInt(hexchars, 16);
+				//} catch (ConvException) {
+				//	throw makeExpected(location, "unicode codepoint specification");
+				//}
+				encode(ref output, i);
 				unicoding = false;
 				continue;
 			}
@@ -81,12 +80,11 @@ void[] unescapeString(Location location, const char[] s)
 			}
 			hexchars ~= c;
 			if (hexchars.length == 2) {
-				try {
-					//output ~= parse!ubyte(hexchars, 16);
-					output ~= '0';
-				} catch (ConvException) {
-					throw makeExpected(location, "hex digit");
-				}
+				//try {
+					output ~= cast(char) toInt(hexchars, 16);
+				//} catch (ConvException) {
+				//	throw makeExpected(location, "hex digit");
+				//}
 				hexing = false;
 				hexchars.length = 0;
 			}
@@ -96,18 +94,18 @@ void[] unescapeString(Location location, const char[] s)
 		// \X
 		if (escaping) {
 			switch (c) {
-				case '\'': encode(output, '\''); break;
-				case '\"': encode(output, '\"'); break;
-				case '\?': encode(output, '\?'); break;
-				case '\\': encode(output, '\\'); break;
-				case 'a': encode(output, '\a'); break;
-				case 'b': encode(output, '\b'); break;
-				case 'f': encode(output, '\f'); break;
-				case 'n': encode(output, '\n'); break;
-				case 'r': encode(output, '\r'); break;
-				case 't': encode(output, '\t'); break;
-				case 'v': encode(output, '\v'); break;
-				case '0': encode(output, 0); break;
+				case '\'': encode(ref output, '\''); break;
+				case '\"': encode(ref output, '\"'); break;
+				case '\?': encode(ref output, '\?'); break;
+				case '\\': encode(ref output, '\\'); break;
+				case 'a': encode(ref output, '\a'); break;
+				case 'b': encode(ref output, '\b'); break;
+				case 'f': encode(ref output, '\f'); break;
+				case 'n': encode(ref output, '\n'); break;
+				case 'r': encode(ref output, '\r'); break;
+				case 't': encode(ref output, '\t'); break;
+				case 'v': encode(ref output, '\v'); break;
+				case '0': encode(ref output, 0); break;
 				case 'x':
 					escaping = false;
 					hexing = true;
