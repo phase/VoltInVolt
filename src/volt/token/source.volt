@@ -47,13 +47,10 @@ public:
 	 */
 	this(string filename)
 	{
-		eof = false;
 		source = cast(string)read(filename);
-		validate(source);
 		location.filename = filename;
 		location.line = 1;
 		location.column = 1;
-
 		this(source, location);
 
 		skipScriptLine();
@@ -72,11 +69,11 @@ public:
 	 */
 	this(string s, Location location)
 	{
+		mIndex = 0;
 		eof = false;
 		source = s;
 		checkBOM();
 		validate(source);
-
 		next();
 
 		this.location = location;
