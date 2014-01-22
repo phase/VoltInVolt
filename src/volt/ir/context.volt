@@ -2,8 +2,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.ir.context;
 
-import watt.conv;
-import watt.text.format;
+import watt.conv : toString;
+import watt.text.format : format;
 
 import volt.errors;
 import volt.ir.base;
@@ -11,6 +11,8 @@ import volt.ir.type;
 import volt.ir.toplevel;
 import volt.ir.declaration;
 import volt.ir.expression;
+import volt.ir.statement;
+import volt.token.location;
 
 
 /**
@@ -42,6 +44,8 @@ import volt.ir.expression;
  * node is a Type. Scope means s is a named scope, and node
  * contains the node that introduced the scope. Functions
  * means that functions contain an overload set of a function.
+ * An Expression Store contains a delegate that generates a new
+ * expression in place of the lookup.
  *
  * Note: not a node.
  *
@@ -63,6 +67,7 @@ public:
 		Template,
 		EnumDeclaration,
 		FunctionParam,
+		Expression,
 	}
 
 
@@ -99,6 +104,13 @@ public:
 	 */
 	Store myAlias;
 
+	/**
+	 * If Kind is Expression, this delegate is used to replace
+	 * the IdentifierExp with another expression. It's null
+	 * otherwise.
+	 */
+	Exp delegate(Location) expressionDelegate;
+
 
 public:
 	/**
@@ -108,7 +120,7 @@ public:
 	 */
 	this(Scope s, Node n, string name, Kind kind)
 	in {
-		////assert(kind != Kind.Function);
+		assert(kind != Kind.Function);
 	}
 	body {
 		this.name = name;
@@ -123,7 +135,7 @@ public:
 	 */
 	this(Scope parent, Node n, string name, Scope look, Kind kind)
 	in {
-		////assert(kind == Kind.Alias);
+	//	assert(kind == Kind.Alias);
 	}
 	body {
 		this.name = name;
@@ -164,17 +176,29 @@ public:
 		this.kind = Kind.EnumDeclaration;
 	}
 
+	/**
+	 * Used in foreach statements to transparently replace
+	 * element variable lookups with index operations into
+	 * the foreach's array.
+	 */
+	this(Scope parent, Exp delegate(Location) dg, string name)
+	{
+		this.parent = parent;
+		this.expressionDelegate = dg;
+		this.kind = Kind.Expression;
+	}
+
 	void markAliasResolved(Store s)
 	{
-		//assert(kind == Kind.Alias);
-		//assert(myAlias is null);
+		assert(kind == Kind.Alias);
+		assert(myAlias is null);
 		myAlias = s;
 	}
 
 	void markAliasResolved(Type t)
 	{
-		//assert(kind == Kind.Alias);
-		//assert(myAlias is null);
+		assert(kind == Kind.Alias);
+		assert(myAlias is null);
 		kind = Kind.Type;
 		node = t;
 	}
@@ -209,6 +233,8 @@ public:
 	Scope parent;
 	/// Declared symbols in this scope.
 	Store[string] symbols;
+	/// All with statements that apply to this scope.
+	WithStatement[] withStatements;
 
 	/**
 	 * Modules to implicitly look up symbols in.
@@ -248,8 +274,8 @@ public:
 
 	void remove(string name)
 	{
+		throw new Exception("cannot remove symbols!");
 		//symbols.remove(name);
-		return;
 	}
 
 	string genAnonIdent()
@@ -270,11 +296,11 @@ public:
 	 */
 	Store addAlias(Alias n, string name, Scope look = null)
 	in {
-		//assert(n !is null);
-		//assert(name !is null);
+		assert(n !is null);
+		assert(name !is null);
 	}
 	body {
-		errorOn(n, name);
+		errorOn(n.location, name);
 		auto store = new Store(this, n, name, look, Store.Kind.Alias);
 		symbols[name] = store;
 		return store;
@@ -292,11 +318,11 @@ public:
 	 */
 	Store addScope(Node n, Scope s, string name)
 	in {
-		//assert(n !is null);
-		//assert(name !is null);
+		assert(n !is null);
+		assert(name !is null);
 	}
 	body {
-		errorOn(n, name);
+		errorOn(n.location, name);
 
 		auto store = new Store(this, n, name, Store.Kind.Scope);
 		symbols[name] = store;
@@ -314,12 +340,14 @@ public:
 	 *   None.
 	 */
 	Store addType(Node n, string name)
-	in {
-		//assert(n !is null);
-		//assert(name !is null);
-	}
-	body {
-		errorOn(n, name);
+	{
+		if (n is null) {
+			throw panic("null Node provided to addType");
+		}
+		if (name is null) {
+			throw panic(n.location, "null name provided to addType");
+		}
+		errorOn(n.location, name);
 		auto store = new Store(this, n, name, Store.Kind.Type);
 		symbols[name] = store;
 		return store;
@@ -335,12 +363,14 @@ public:
 	 *   None.
 	 */
 	Store addValue(Node n, string name)
-	in {
-		//assert(n !is null);
-		//assert(name !is null);
-	}
-	body {
-		errorOn(n, name);
+	{
+		if (n is null) {
+			throw panic("null node passed to addValue");
+		}
+		if (name is null) {
+			throw panic(n.location, "null name passed to addValue");
+		}
+		errorOn(n.location, name);
 		Store store;
 		if (n.nodeType == NodeType.FunctionParam) {
 			store = new Store(this, n, name, Store.Kind.FunctionParam);
@@ -363,12 +393,11 @@ public:
 	 */
 	Store addFunction(Function fn, string name)
 	in {
-		//assert(fn !is null);
-		//assert(name !is null);
+		assert(fn !is null);
+		assert(name !is null);
 	}
 	body {
-		//Store ret = (name in symbols);
-		auto ret = symbols[name];
+		Store* ret = name in symbols;
 
 		if (ret is null) {
 			auto store = new Store(this, fn, name);
@@ -376,10 +405,10 @@ public:
 			return store;
 		} else if (ret.kind == Store.Kind.Function) {
 			ret.functions ~= fn;
-			return ret;
+			return *ret;
 		}
-		errorDefined(fn, name);
-		//assert(false);
+		errorDefined(fn.location, name);
+		assert(false);
 	}
 
 	/**
@@ -393,11 +422,11 @@ public:
 	 */
 	Store addTemplate(Node n, string name)
 	in {
-		//assert(n !is null);
-		//assert(name !is null);
+		assert(n !is null);
+		assert(name !is null);
 	}
 	body {
-		errorOn(n, name);
+		errorOn(n.location, name);
 		auto store = new Store(this, n, name, Store.Kind.Template);
 		symbols[name] = store;
 		return store;
@@ -414,13 +443,34 @@ public:
 	 */
 	Store addEnumDeclaration(EnumDeclaration e)
 	in {
-		//assert(e !is null);
-		//assert(e.name.length > 0);
+		assert(e !is null);
+		assert(e.name.length > 0);
 	}
 	body {
-		errorOn(e, e.name);
+		errorOn(e.location, e.name);
 		auto store = new Store(this, e, e.name);
 		symbols[e.name] = store;
+		return store;
+	}
+
+	/**
+	 * Add an expression delegate store to the scope.
+	 *
+	 * Throws:
+	 *   CompilerPanic if anoter symbol of the same name is found.
+	 *
+	 * Side-effects:
+	 *   None.
+	 */
+	Store addExpressionDelegate(Location loc, Exp delegate(Location) dg, string name)
+	in {
+		assert(dg !is null);
+		assert(name.length > 0);
+	}
+	body {
+		errorOn(loc, name);
+		auto store = new Store(this, dg, name);
+		symbols[name] = store;
 		return store;
 	}
 
@@ -435,12 +485,12 @@ public:
 	 */
 	void addStore(Store s, string name)
 	in {
-		//assert(s !is null);
-		//assert(s.node !is null);
-		//assert(name !is null);
+		assert(s !is null);
+		assert(s.node !is null);
+		assert(name !is null);
 	}
 	body {
-		errorOn(s.node, name);
+		errorOn(s.node.location, name);
 		symbols[name] = s;
 	}
 
@@ -455,11 +505,10 @@ public:
 	 */
 	Store getStore(string name)
 	{
-		//auto ret = name in symbols;
-		auto ret = symbols[name];
+		auto ret = name in symbols;
 		if (ret is null)
 			return null;
-		auto s = ret;
+		auto s = *ret;
 		while (s.myAlias !is null) {
 			s = s.myAlias;
 		}
@@ -472,34 +521,32 @@ public:
 	Declaration[] getNestedDeclarations()
 	{
 		Declaration[] variables;
-		for (size_t i = 0; i < /*symbols.values.length*/3; i++) {
-			auto store = symbols["dummy"];//symbols.values[i];
+		foreach (store; symbols.values) {
 			auto variable = cast(Variable) store.node;
 			if (variable is null || variable.storage != Variable.Storage.Nested) {
 				continue;
 			}
-			//variables ~= variable;
+			variables ~= cast(Declaration) variable;
 		}
 		return variables;
 	}
 
 private:
-	void errorOn(Node n, string name)
+	void errorOn(Location loc, string name)
 	in {
-		//assert(n !is null);
-		//assert(name !is null);
+		assert(name !is null);
 	}
 	body {
 		auto ret = name in symbols;
 		if (ret is null)
 			return;
 
-		errorDefined(n, name);
+		errorDefined(loc, name);
 	}
 
-	void errorDefined(Node n, string name)
+	void errorDefined(Location loc, string name)
 	{
 		auto str = format("\"%s\" already defined", name);
-		throw panic(n.location, str);
+		throw panic(loc, str);
 	}
 }
