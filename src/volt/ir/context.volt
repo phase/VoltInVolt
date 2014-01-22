@@ -159,7 +159,8 @@ public:
 		this.name = name;
 		this.node = fn;
 		this.parent = s;
-		this.functions = [fn];
+		this.functions = new Function[](1);
+		this.functions[0] = fn;
 		this.kind = Kind.Function;
 	}
 
