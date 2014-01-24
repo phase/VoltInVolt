@@ -3,7 +3,7 @@
 module volt.ir.util;
 
 import volt.errors;
-import volt.interfaces;
+import volt.interfaces : LanguagePass;
 import volt.token.location;
 //import volt.semantic.util : canonicaliseStorageType;
 import volt.util.string : unescapeString;
@@ -59,40 +59,40 @@ QualifiedName buildQualifiedNameSmart(Identifier i)
 Scope getScopeFromType(Type type)
 {
 	switch (type.nodeType) with (NodeType) {
-	case ir.NodeType.TypeReference:
+	case TypeReference:
 		auto asTypeRef = cast(TypeReference) type;
 		assert(asTypeRef !is null);
 		assert(asTypeRef.type !is null);
 		return getScopeFromType(asTypeRef.type);
-	case ir.NodeType.ArrayType:
+	case ArrayType:
 		auto asArray = cast(ArrayType) type;
 		assert(asArray !is null);
 		return getScopeFromType(asArray.base);
-	case ir.NodeType.PointerType:
+	case PointerType:
 		auto asPointer = cast(PointerType) type;
 		assert(asPointer !is null);
 		return getScopeFromType(asPointer.base);
-	case ir.NodeType.Struct:
+	case Struct:
 		auto asStruct = cast(Struct) type;
 		assert(asStruct !is null);
 		return asStruct.myScope;
-	case ir.NodeType.Union:
+	case Union:
 		auto asUnion = cast(Union) type;
 		assert(asUnion !is null);
 		return asUnion.myScope;
-	case ir.NodeType.Class:
+	case Class:
 		auto asClass = cast(Class) type;
 		assert(asClass !is null);
 		return asClass.myScope;
-	case ir.NodeType.Interface:
+	case Interface:
 		auto asInterface = cast(_Interface) type;
 		assert(asInterface !is null);
 		return asInterface.myScope;
-	case ir.NodeType.UserAttribute:
+	case UserAttribute:
 		auto asAttr = cast(UserAttribute) type;
 		assert(asAttr !is null);
 		return asAttr.myScope;
-	case ir.NodeType.Enum:
+	case Enum:
 		auto asEnum = cast(Enum) type;
 		assert(asEnum !is null);
 		return asEnum.myScope;
@@ -120,6 +120,7 @@ Scope getScopeFromStore(Store store)
 	case FunctionParam:
 	case Template:
 	case EnumDeclaration:
+	case Expression:
 		return null;
 	case Alias:
 		throw panic(store.node.location, "unresolved alias");
@@ -209,7 +210,7 @@ Type copyTypeSmart(Location loc, Type type)
 		/// @todo Get fully qualified name for type.
 		return buildTypeReference(loc, type, s !is null ? s.name : null);
 	default:
-		throw panicUnhandled(type, to!string(type.nodeType));
+		throw panicUnhandled(type.location, cast(string) toString(type.nodeType));
 	}
 }
 
@@ -314,7 +315,7 @@ ArrayLiteral buildArrayLiteralSmart(Location loc, Type type, Exp[] exps...)
 	auto literal = new ArrayLiteral();
 	literal.location = loc;
 	literal.type = copyTypeSmart(loc, type);
-	literal.values = exps.dup;
+	literal.values = exps[0 .. exps.length];
 	return literal;
 }
 
@@ -323,7 +324,7 @@ StructLiteral buildStructLiteralSmart(Location loc, Type type, Exp[] exps)
 	auto literal = new StructLiteral();
 	literal.location = loc;
 	literal.type = copyTypeSmart(loc, type);
-	literal.exps = exps.dup;
+	literal.exps = exps[0 .. exps.length];
 	return literal;
 }
 
@@ -335,10 +336,11 @@ void addVariable(BlockStatement b, StatementExp statExp, Variable var)
 {
 	b.myScope.addValue(var, var.name);
 	if (statExp !is null) {
-		statExp.statements ~= var;
+		statExp.statements ~= cast(Node) var;
 	} else {
-		b.statements ~= var;
+		b.statements ~= cast(Node) var;
 	}
+	return;
 }
 
 /**
@@ -384,7 +386,7 @@ Variable copyVariableSmart(Location loc, Variable right)
 
 Variable[] copyVariablesSmart(Location loc, Variable[] vars)
 {
-	auto outVars = new Variable[vars.length];
+	auto outVars = new Variable[](vars.length);
 	foreach (i, var; vars) {
 		outVars[i] = copyVariableSmart(loc, var);
 	}
@@ -396,7 +398,7 @@ Variable[] copyVariablesSmart(Location loc, Variable[] vars)
  */
 Exp[] getExpRefs(Location loc, FunctionParam[] vars)
 {
-	auto erefs = new Exp[vars.length];
+	auto erefs = new Exp[](vars.length);
 	foreach (i, var; vars) {
 		erefs[i] = buildExpReference(loc, var, var.name);
 	}
@@ -503,7 +505,7 @@ Constant buildSizeTConstant(Location loc, LanguagePass lp, int val)
 	if (prim.type == PrimitiveType.Kind.Ulong) {
 		c._ulong = val;
 	} else {
-		c._uint = val;
+		c._uint = cast(uint) val;
 	}
 	c.type = prim;
 	return c;
@@ -620,7 +622,7 @@ Unary buildNewSmart(Location loc, Type type, Exp[] arguments...)
 	new_.op = Unary.Op.New;
  	new_.type = copyTypeSmart(loc, type);
 	new_.hasArgumentList = arguments.length > 0;
-	new_.argumentList = arguments.dup;
+	new_.argumentList = arguments[0 .. arguments.length];
 	return new_;
 }
 
@@ -660,7 +662,7 @@ Postfix buildSlice(Location loc, Exp child, Exp[] args...)
 	slice.location = loc;
 	slice.op = Postfix.Op.Slice;
 	slice.child = child;
-	slice.arguments = args.dup;
+	slice.arguments = args[0 .. args.length];
 
 	return slice;
 }
@@ -688,7 +690,7 @@ Postfix buildCall(Location loc, Exp child, Exp[] args)
 	call.location = loc;
 	call.op = Postfix.Op.Call;
 	call.child = child;
-	call.arguments = args.dup;
+	call.arguments = args[0 .. args.length];
 
 	return call;
 }
