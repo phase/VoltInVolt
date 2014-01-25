@@ -336,9 +336,9 @@ void addVariable(BlockStatement b, StatementExp statExp, Variable var)
 {
 	b.myScope.addValue(var, var.name);
 	if (statExp !is null) {
-		statExp.statements ~= cast(Node) var;
+		statExp.statements ~= var;
 	} else {
-		b.statements ~= cast(Node) var;
+		b.statements ~= var;
 	}
 	return;
 }
@@ -920,7 +920,7 @@ StatementExp buildInternalArrayLiteralSliceSmart(Location loc, Type atype, Type[
 		auto evassign = buildAssign(loc, buildExpReference(loc, evar), exp);
 		buildExpStat(loc, sexp, evassign);
 
-		Exp dst = buildAdd(loc, buildAccess(loc, buildExpReference(loc, var), "ptr"), buildConstantUint(loc, offset));
+		Exp dst = buildAdd(loc, buildAccess(loc, buildExpReference(loc, var), "ptr"), buildConstantUint(loc, cast(uint) offset));
 		Exp src = buildCastToVoidPtr(loc, buildAddrOf(loc, buildExpReference(loc, evar)));
 		Exp len = buildConstantUint(loc, cast(uint) sizes[i]);
 		Exp aln = buildConstantInt(loc, 0);
