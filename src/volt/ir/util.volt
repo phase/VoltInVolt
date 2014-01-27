@@ -19,7 +19,8 @@ QualifiedName buildQualifiedName(Location loc, string value)
 	auto i = new Identifier(value);
 	i.location = loc;
 	auto q = new QualifiedName();
-	q.identifiers = [i];
+	q.identifiers = new Identifier[](1);
+	q.identifiers[0] = i;
 	q.location = loc;
 	return q;
 }
