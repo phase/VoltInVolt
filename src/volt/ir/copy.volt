@@ -5,6 +5,7 @@ module volt.copy;
 import watt.conv;
 
 import volt.ir.ir;
+import volt.ir.util;
 import volt.token.location;
 
 import volt.errors;
@@ -306,9 +307,6 @@ Exp copyExp(Location location, Exp exp)
 Node copyNode(Node n)
 {
 	final switch (n.nodeType) with (NodeType) {
-	case Invalid:
-		auto msg = format("invalid node '%s'", toString(n.nodeType));
-		assert(false, msg);
 	case NonVisiting:
 		assert(false, "non-visiting node");
 	case Constant:
@@ -421,6 +419,8 @@ Node copyNode(Node n)
 	case FunctionSet:
 	case FunctionSetType:
 	case VaArgExp:
-		goto case Invalid;
+	case Invalid:
+		auto msg = format("invalid node '%s'", toString(n.nodeType));
+		assert(false, msg);
 	}
 }
