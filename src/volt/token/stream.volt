@@ -73,7 +73,7 @@ public:
 	 */
 	bool opEquals(TokenType type)
 	{
-		return peek().type == type;
+		return mTokens[mIndex].type == type;
 	}
 
 	/**
@@ -99,7 +99,7 @@ public:
 	 * Side-effects:
 	 *   None.
 	 */
-	Token peek()
+	@property Token peek()
 	{
 		return mTokens[mIndex];
 	}
@@ -127,7 +127,7 @@ public:
 	Token lookahead(size_t n)
 	{
 		if (n == 0) {
-			return peek();
+			return peek;
 		}
 		auto index = mIndex + n;
 		if (index >= mTokens.length) {
