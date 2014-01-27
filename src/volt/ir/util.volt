@@ -48,7 +48,8 @@ QualifiedName buildQualifiedName(Location loc, string[] value)
 QualifiedName buildQualifiedNameSmart(Identifier i)
 {
 	auto q = new QualifiedName();
-	q.identifiers = [new Identifier(i)];
+	q.identifiers = new Identifier[](1);
+	q.identifiers[0] = new Identifier(i);
 	q.location = i.location;
 	return q;
 }
@@ -926,7 +927,10 @@ StatementExp buildInternalArrayLiteralSliceSmart(Location loc, Type atype, Type[
 		Exp len = buildConstantUint(loc, cast(uint) sizes[i]);
 		Exp aln = buildConstantInt(loc, 0);
 		Exp vol = buildConstantBool(loc, false);
-		auto call = buildCall(loc, buildExpReference(loc, memcpyFn), [dst, src, len, aln, vol]);
+		auto args = new Exp[](5);
+		args[0] = dst; args[1] = src; args[2] = len;
+		args[3] = aln; args[4] = vol;
+		auto call = buildCall(loc, buildExpReference(loc, memcpyFn), args);
 		buildExpStat(loc, sexp, call);
 		offset += sizes[i];
 	}
