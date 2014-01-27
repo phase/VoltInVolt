@@ -13,9 +13,9 @@ import volt.ir.ir;
  */
 class Controller
 {
-	Module getModule(QualifiedName name);
+	Module getModule(QualifiedName name) { return null; }
 
-	void close();
+	void close() { return; }
 }
 
 /**
@@ -24,7 +24,7 @@ class Controller
  */
 class Frontend
 {
-	Module parseNewFile(string source, Location loc);
+	Module parseNewFile(string source, Location loc) { return null; }
 
 	/**
 	 * Parse a zero or more statements from a string, does not
@@ -32,9 +32,9 @@ class Frontend
 	 *
 	 * Used for string mixins in functions.
 	 */
-	Node[] parseStatements(string source, Location loc);
+	Node[] parseStatements(string source, Location loc) { return null; }
 
-	void close();
+	void close() { return; }
 }
 
 /**
@@ -55,9 +55,9 @@ class Frontend
  */
 class Pass
 {
-	void transform(Module m);
+	void transform(Module m) { return; }
 
-	void close();
+	void close() { return; }
 }
 
 /**
@@ -375,22 +375,22 @@ class Backend
 	/**
 	 * Return the supported target types.
 	 */
-	TargetType[] supported();
+	TargetType[] supported() { return null; }
 
 	/**
 	 * Set the target file and output type. Backends usually only
 	 * suppports one or two output types @see supported.
 	 */
-	void setTarget(string filename, TargetType type);
+	void setTarget(string filename, TargetType type) { return; }
 
 	/**
 	 * Compile the given module. You need to have called setTarget before
 	 * calling this function. setTarget needs to be called for each
 	 * invocation of this function.
 	 */
-	void compile(Module m);
+	void compile(Module m) { return; }
 
-	void close();
+	void close() { return; }
 }
 
 /**
