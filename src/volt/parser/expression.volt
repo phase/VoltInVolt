@@ -3,7 +3,7 @@
 module volt.parser.expression;
 // Most of these can pass through to a lower function, see the IR.
 
-import std.conv;
+import watt.conv;
 
 import ir = volt.ir.ir;
 import intir = volt.parser.intir;
@@ -79,7 +79,6 @@ ir.Exp binexpToExp(intir.BinExp bin)
 	// Ladies and gentlemen, Mr. Edsger Dijkstra's shunting-yard algorithm! (polite applause)
 	// Shouldn't be needed.
 
-	import std.stdio;
 	ExpOrOp[] tokens = gatherExps(bin);
 	ExpOrOp[] output;
 	ir.BinOp.Op[] stack;
@@ -330,7 +329,6 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 			auto prefix = c._string[0 .. 2];
 			c._string = c._string[2 .. $];
 			auto v = to!ulong(c._string, prefix == "0x" ? 16 : 2);
-			import std.stdio;
 			if (v > uint.max) {
 				if (!explicitBase)
 					base = ir.PrimitiveType.Kind.Long;

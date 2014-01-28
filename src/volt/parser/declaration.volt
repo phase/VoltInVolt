@@ -18,7 +18,7 @@ import volt.parser.toplevel;
 import volt.parser.declaration;
 import volt.parser.statements;
 import volt.token.location;
-import volt.semantic.classify;
+//import volt.semantic.classify;
 
 
 ir.Node[] parseVariable(TokenStream ts)

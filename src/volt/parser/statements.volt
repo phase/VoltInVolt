@@ -414,7 +414,7 @@ ir.SwitchStatement parseSwitchStatement(TokenStream ts)
 		}
 	}
 
-	static ir.BlockStatement parseCaseStatements(TokenStream ts)
+	ir.BlockStatement parseCaseStatements(TokenStream ts)
 	{
 		auto bs = new ir.BlockStatement();
 		bs.location = ts.peek.location;
