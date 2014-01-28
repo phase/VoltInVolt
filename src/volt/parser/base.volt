@@ -63,14 +63,15 @@ ir.QualifiedName parseQualifiedName(TokenStream ts, bool allowLeadingDot = false
 	do {
 		name.identifiers ~= parseIdentifier(ts);
 
-		if (ts == TokenType.Dot) {
+		if (ts.peek.type == TokenType.Dot) {
 			t = match(ts, TokenType.Dot);
 		} else {
 			break;
 		}
 	} while(true);
 
-	name.location = t.location - startLocation;
+	//name.location = t.location - startLocation;
+	name.location = t.location.opSub(ref startLocation);
 
 	return name;
 }
