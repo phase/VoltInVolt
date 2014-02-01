@@ -18,53 +18,53 @@ ir.Statement[] parseStatement(TokenStream ts)
 {
 	switch (ts.peek.type) {
 	case TokenType.Semicolon:
-		return [parseEmptyStatement(ts)];
+		return [cast(ir.Statement)parseEmptyStatement(ts)];
 	case TokenType.Return:
-		return [parseReturnStatement(ts)];
+		return [cast(ir.Statement)parseReturnStatement(ts)];
 	case TokenType.OpenBrace:
-		return [parseBlockStatement(ts)];
+		return [cast(ir.Statement)parseBlockStatement(ts)];
 	case TokenType.Asm:
-		return [parseAsmStatement(ts)];
+		return [cast(ir.Statement)parseAsmStatement(ts)];
 	case TokenType.If:
-		return [parseIfStatement(ts)];
+		return [cast(ir.Statement)parseIfStatement(ts)];
 	case TokenType.While:
-		return [parseWhileStatement(ts)];
+		return [cast(ir.Statement)parseWhileStatement(ts)];
 	case TokenType.Do:
-		return [parseDoStatement(ts)];
+		return [cast(ir.Statement)parseDoStatement(ts)];
 	case TokenType.For:
-		return [parseForStatement(ts)];
+		return [cast(ir.Statement)parseForStatement(ts)];
 	case TokenType.Foreach, TokenType.ForeachReverse:
-		return [parseForeachStatement(ts)];
+		return [cast(ir.Statement)parseForeachStatement(ts)];
 	case TokenType.Switch:
-		return [parseSwitchStatement(ts)];
+		return [cast(ir.Statement)parseSwitchStatement(ts)];
 	case TokenType.Break:
-		return [parseBreakStatement(ts)];
+		return [cast(ir.Statement)parseBreakStatement(ts)];
 	case TokenType.Continue:
-		return [parseContinueStatement(ts)];
+		return [cast(ir.Statement)parseContinueStatement(ts)];
 	case TokenType.Goto:
-		return [parseGotoStatement(ts)];
+		return [cast(ir.Statement)parseGotoStatement(ts)];
 	case TokenType.With:
-		return [parseWithStatement(ts)];
+		return [cast(ir.Statement)parseWithStatement(ts)];
 	case TokenType.Synchronized:
-		return [parseSynchronizedStatement(ts)];
+		return [cast(ir.Statement)parseSynchronizedStatement(ts)];
 	case TokenType.Try:
-		return [parseTryStatement(ts)];
+		return [cast(ir.Statement)parseTryStatement(ts)];
 	case TokenType.Throw:
-		return [parseThrowStatement(ts)];
+		return [cast(ir.Statement)parseThrowStatement(ts)];
 	case TokenType.Scope:
 		if (ts.lookahead(1).type == TokenType.OpenParen && ts.lookahead(2).type == TokenType.Identifier &&
 			ts.lookahead(3).type == TokenType.CloseParen) {
 			auto identTok = ts.lookahead(2);
 			if (identTok.value == "exit" || identTok.value == "failure" || identTok.value == "success") {
-				return [parseScopeStatement(ts)];
+				return [cast(ir.Statement)parseScopeStatement(ts)];
 			}
 		}
 		goto default;
 	case TokenType.Pragma:
-		return [parsePragmaStatement(ts)];
+		return [cast(ir.Statement)parsePragmaStatement(ts)];
 	case TokenType.Identifier:
 		if (ts.lookahead(1).type == TokenType.Colon) {
-			return [parseLabelStatement(ts)];
+			return [cast(ir.Statement)parseLabelStatement(ts)];
 		} else {
 			goto default;
 		}
@@ -83,13 +83,13 @@ ir.Statement[] parseStatement(TokenStream ts)
 			goto default;
 		}
 	case TokenType.Assert:
-		return [parseAssertStatement(ts)];
+		return [cast(ir.Statement)parseAssertStatement(ts)];
 	case TokenType.Version:
 	case TokenType.Debug:
-		ir.Statement[] condstate = [parseConditionStatement(ts)];
+		ir.Statement[] condstate = [cast(ir.Statement)parseConditionStatement(ts)];
 		return condstate;
 	case TokenType.Mixin:
-		return [parseMixinStatement(ts)];
+		return [cast(ir.Statement)parseMixinStatement(ts)];
 	default:
 		ir.Node[] node = parseVariableOrExpression(ts);
 		if (node[0].nodeType != ir.NodeType.Variable && node[0].nodeType != ir.NodeType.Function) {
@@ -100,7 +100,7 @@ ir.Statement[] parseStatement(TokenStream ts)
 			auto asExp = cast(ir.Exp) node[0];
 			assert(asExp !is null);
 			es.exp = asExp;
-			return [es];
+			return [cast(ir.Statement)es];
 
 		} else {
 			// return a regular declaration
