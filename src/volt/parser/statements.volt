@@ -127,13 +127,13 @@ ir.Node[] parseVariableOrExpression(TokenStream ts)
 				throw e;
 			}
 			ts.restore(pos);
-			return [parseFunction(ts, parseType(ts))];
+			return [cast(ir.Node) parseFunction(ts, parseType(ts))];
 		} catch (CompilerError ee) {
 			if (ee.neverIgnore) {
 				throw ee;
 			}
 			ts.restore(pos);
-			return [parseExp(ts)];
+			return [cast(ir.Node) parseExp(ts)];
 		}
 	}
 }
