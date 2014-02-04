@@ -34,6 +34,8 @@ public:
 
 	CompilerError more; // Optional
 	string fixHint; // Optional
+	string file;
+	ulong line;
 
 public:
 	this(string message, CompilerError more, bool neverIgnore, string file = __FILE__, size_t line = __LINE__)
