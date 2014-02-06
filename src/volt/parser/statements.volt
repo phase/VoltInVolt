@@ -641,15 +641,15 @@ ir.ScopeStatement parseScopeStatement(TokenStream ts)
 	match(ts, TokenType.Scope);
 	match(ts, TokenType.OpenParen);
 	auto nameTok = match(ts, TokenType.Identifier);
-	switch (nameTok.value) with (ir.ScopeStatement.Kind) {
+	switch (nameTok.value) {
 	case "exit":
-		ss.kind = Exit;
+		ss.kind = ir.ScopeStatement.Kind.Exit;
 		break;
 	case "success":
-		ss.kind = Success;
+		ss.kind = ir.ScopeStatement.Kind.Success;
 		break;
 	case "failure":
-		ss.kind = Failure;
+		ss.kind = ir.ScopeStatement.Kind.Failure;
 		break;
 	default:
 		throw makeExpected(ts.peek.location, "'exit', 'success', or 'failure'");
