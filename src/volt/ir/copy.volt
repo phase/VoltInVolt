@@ -421,6 +421,6 @@ Node copyNode(Node n)
 	case VaArgExp:
 	case Invalid:
 		auto msg = format("invalid node '%s'", toString(n.nodeType));
-		assert(false, msg);
+		throw panic(n.location, msg);
 	}
 }

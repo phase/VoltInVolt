@@ -69,7 +69,7 @@ void match(Source src, dchar c)
 {
 	auto cur = src.current;
 	if (cur != c) {
-		throw makeExpected(src.location, charToString(c), charToString(cur));
+		throw makeExpected(src.location, cast(string) charToString(c), cast(string) charToString(cur));
 	}
 
 	// Advance to the next character.
