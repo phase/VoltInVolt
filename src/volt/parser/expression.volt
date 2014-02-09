@@ -189,9 +189,9 @@ ir.Exp postfixToExp(Location location, intir.PostfixExp postfix, ir.Exp seed = n
 		if (exp.op == ir.Postfix.Op.Identifier) {
 			assert(postfix.identifier !is null);
 			exp.identifier = postfix.identifier;
-		} else foreach (arg; postfix.arguments) with (ir.Postfix.TagKind) {
+		} else foreach (arg; postfix.arguments) {
 			exp.arguments ~= ternaryToExp(arg);
-			exp.argumentTags ~= arg.taggedRef ? Ref : (arg.taggedOut ? Out : None);
+			exp.argumentTags ~= arg.taggedRef ? ir.Postfix.TagKind.Ref : (arg.taggedOut ? ir.Postfix.TagKind.Out : ir.Postfix.TagKind.None);
 		}
 		return postfixToExp(location, postfix.postfix, exp);
 	}
