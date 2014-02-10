@@ -290,9 +290,11 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 			c._string = c._string[0 .. $-1];
 		}
 		if (base == ir.PrimitiveType.Kind.Float) {
-			c._float = to!float(c._string);
+		//	c._float = to!float(c._string);
+			assert(false);
 		} else {
-			c._double = to!double(c._string);
+		//	c._double = to!double(c._string);
+			assert(false);
 		}
 		c.type = new ir.PrimitiveType(base);
 		c.type.location = primary.location;
@@ -328,7 +330,7 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 		if (c._string.length > 2 && (c._string[0 .. 2] == "0x" || c._string[0 .. 2] == "0b")) {
 			auto prefix = c._string[0 .. 2];
 			c._string = c._string[2 .. $];
-			auto v = to!ulong(c._string, prefix == "0x" ? 16 : 2);
+			auto v = cast(ulong) toInt(c._string, prefix == "0x" ? 16 : 2);
 			if (v > uint.max) {
 				if (!explicitBase)
 					base = ir.PrimitiveType.Kind.Long;
@@ -341,16 +343,16 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 		} else {
 			switch (base) with (ir.PrimitiveType.Kind) {
 			case Int:
-				c._int = to!int(c._string);
+				c._int = toInt(c._string);
 				break;
 			case Uint:
-				c._uint = to!uint(c._string);
+				c._uint = cast(uint) toInt(c._string);
 				break;
 			case Long:
-				c._long = to!long(c._string);
+				c._long = cast(long) toInt(c._string);
 				break;
 			case Ulong:
-				c._ulong = to!ulong(c._string);
+				c._ulong = cast(ulong) toInt(c._string);
 				break;
 			default:
 				assert(false);
