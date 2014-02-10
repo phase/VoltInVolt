@@ -168,8 +168,8 @@ public:
 	}
 
 public:
-	Type op;
-	volt.ir.declaration.Type type;
+	PrimaryExp.Type op;
+	.Type type;
 	Exp exp;
 	string _string;      // Optional.
 	TernaryExp[] keys;
