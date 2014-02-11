@@ -451,7 +451,7 @@ private intir.TernaryExp[] _parseArgumentList(TokenStream ts, TokenType endChar 
 	intir.TernaryExp[] pexps;
 	while (ts.peek.type != endChar) {
 		if (ts.peek.type == TokenType.End) {
-			throw makeExpected(ts.peek.location, "end of argument list");
+			throw makeExpected(ts.peek.location, "end of argument list", false);
 		}
 		pexps ~= parseTernaryExp(ts);
 		if (ts.peek.type != endChar) {
@@ -490,28 +490,28 @@ ir.IsExp parseIsExp(TokenStream ts)
 			break;
 		case Identifier:
 			if (ie.identifier.length > 0) {
-				throw makeExpected(ts.peek.location, "is expression");
+				throw makeExpected(ts.peek.location, "is expression", false);
 			}
 			auto nameTok = match(ts, Identifier);
 			ie.identifier = nameTok.value;
 			break;
 		case Colon:
 			if (ie.compType != ir.IsExp.Comparison.None) {
-				throw makeExpected(ts.peek.location, "is expression");
+				throw makeExpected(ts.peek.location, "is expression", false);
 			}
 			ts.get();
 			ie.compType = ir.IsExp.Comparison.Implicit;
 			break;
 		case DoubleAssign:
 			if (ie.compType != ir.IsExp.Comparison.None) {
-				throw makeExpected(ts.peek.location, "is expression");
+				throw makeExpected(ts.peek.location, "is expression", false);
 			}
 			ts.get();
 			ie.compType = ir.IsExp.Comparison.Exact;
 			break;
 		default:
 			if (ie.compType == ir.IsExp.Comparison.None) {
-				throw makeExpected(ts.peek.location, "'==' or ':'");
+				throw makeExpected(ts.peek.location, "'==' or ':'", false);
 			}
 			switch (ts.peek.type) with (TokenType) {
 			case Struct, Union, Class, Enum, Interface, Function,
@@ -609,7 +609,7 @@ ir.TraitsExp parseTraitsExp(TokenStream ts)
 		texp.qname = parseQualifiedName(ts);
 		break;
 	default:
-		throw makeExpected(nameTok.location, "__traits identifier");
+		throw makeExpected(nameTok.location, "__traits identifier", false);
 	}
 
 	match(ts, TokenType.CloseParen);
@@ -740,7 +740,7 @@ intir.BinExp parseBinExp(TokenStream ts)
 		exp.right = parseBinExp(ts);
 	}
 
-	exp.location.spanTo(ts.previous.location);
+	exp.location.spanTo(ref ts.previous().location);
 	return exp;
 }
 
@@ -1139,7 +1139,7 @@ intir.PrimaryExp parsePrimaryExp(TokenStream ts)
 			exp.functionLiteral = parseFunctionLiteral(ts);
 		} catch (CompilerError e) {
 			ts.restore(mark);
-			throw makeExpected(ts.peek.location, "primary expression");
+			throw makeExpected(ts.peek.location, "primary expression", false);
 		}
 		break;
 	}

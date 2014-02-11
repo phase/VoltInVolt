@@ -332,7 +332,7 @@ ir.ForStatement parseForStatement(TokenStream ts)
 		try {
 			first = parseVariableOrExpression(ts);
 		} catch (CompilerError e) {
-			throw makeExpected(ts.peek.location, "declaration or expression");
+			throw makeExpected(ts.peek.location, "declaration or expression", false);
 		}
 		if (first[0].nodeType != ir.NodeType.Variable) {
 			f.initExps ~= cast(ir.Exp) first[0];
@@ -478,7 +478,7 @@ ir.SwitchStatement parseSwitchStatement(TokenStream ts)
 		case TokenType.CloseBrace:
 			break;
 		default:
-			throw makeExpected(ts.peek.location, "'case', 'default', or '}'");
+			throw makeExpected(ts.peek.location, "'case', 'default', or '}'", false);
 		}
 	}
 	while (braces--) {
@@ -545,7 +545,7 @@ ir.GotoStatement parseGotoStatement(TokenStream ts)
 		}
 		break;
 	default:
-		throw makeExpected(ts.peek.location, "identifier, 'case', or 'default'.");
+		throw makeExpected(ts.peek.location, "identifier, 'case', or 'default'.", false);
 	}
 	match(ts, TokenType.Semicolon);
 
@@ -652,7 +652,7 @@ ir.ScopeStatement parseScopeStatement(TokenStream ts)
 		ss.kind = ir.ScopeStatement.Kind.Failure;
 		break;
 	default:
-		throw makeExpected(ts.peek.location, "'exit', 'success', or 'failure'");
+		throw makeExpected(ts.peek.location, "'exit', 'success', or 'failure'", false);
 	}
 	match(ts, TokenType.CloseParen);
 	ss.block = parseBlockStatement(ts);

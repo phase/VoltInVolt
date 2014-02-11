@@ -55,7 +55,7 @@ void[] unescapeString(Location location, const char[] s)
 					unicoding = false;
 					continue;
 				} else { 
-					throw makeExpected(location, "unicode codepoint specification");
+					throw makeExpected(location, "unicode codepoint specification", false);
 				}
 			}
 			if (hexchars.length == 8) {
@@ -76,7 +76,7 @@ void[] unescapeString(Location location, const char[] s)
 		// \xXX
 		if (hexing) {
 			if (!isHex(c)) {
-				throw makeExpected(location, "hex digit");
+				throw makeExpected(location, "hex digit", false);
 			}
 			hexchars ~= c;
 			if (hexchars.length == 2) {
@@ -117,7 +117,7 @@ void[] unescapeString(Location location, const char[] s)
 					continue;
 				// @todo Named character entities. http://www.w3.org/TR/html5/named-character-references.html
 				default:
-					throw makeExpected(location, "valid escape");
+					throw makeExpected(location, "valid escape", false);
 			}
 			escaping = false;
 			continue;
@@ -132,7 +132,7 @@ void[] unescapeString(Location location, const char[] s)
 	}
 
 	if (escaping) {
-		throw makeExpected(location, "valid escape.");
+		throw makeExpected(location, "valid escape.", false);
 	}
 
 	return cast(void[]) output;
