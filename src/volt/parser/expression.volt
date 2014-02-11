@@ -513,7 +513,7 @@ ir.IsExp parseIsExp(TokenStream ts)
 			if (ie.compType == ir.IsExp.Comparison.None) {
 				throw makeExpected(ts.peek.location, "'==' or ':'");
 			}
-			switch (ts.peek.type) {
+			switch (ts.peek.type) with (TokenType) {
 			case Struct, Union, Class, Enum, Interface, Function,
 				 Delegate, Super, Const, Immutable, Inout, Shared,
 				 Return:

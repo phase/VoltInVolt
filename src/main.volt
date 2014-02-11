@@ -14,7 +14,12 @@ int main(string[] args)
 	}
 	for (size_t i = 1; i < args.length; i++) {
 		auto src = new Source(args[i]);
-		auto tstream = lex(src);
+		TokenStream tstream;
+		try {
+			tstream = lex(src);
+		} catch (Exception) {
+			return 3;
+		}
 		Token token;
 		printf("---%s---\n", args[i]);
 		do { 

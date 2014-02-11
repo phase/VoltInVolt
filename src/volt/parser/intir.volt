@@ -56,7 +56,8 @@ int getPrecedence(BinOp.Op operator)
 	switch (operator) with (BinOp.Op) {
 	case Pow:
 		return 11;
-	case Mul, Div, Mod:
+	case Mul: 
+	case Div, Mod:
 		return 10;
 	case Add, Sub, Cat:
 		return 9;
