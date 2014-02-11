@@ -59,20 +59,20 @@ ir.Statement[] parseStatement(TokenStream ts)
 				return [parseScopeStatement(ts)];
 			}
 		}
-		goto default;
+		//goto default;
 	case TokenType.Pragma:
 		return [parsePragmaStatement(ts)];
 	case TokenType.Identifier:
 		if (ts.lookahead(1).type == TokenType.Colon) {
 			return [parseLabelStatement(ts)];
 		} else {
-			goto default;
+		//	goto default;
 		}
 	case TokenType.Final:
 		if (ts.lookahead(1).type == TokenType.Switch) {
-			goto case TokenType.Switch;
+		//	goto case TokenType.Switch;
 		} else {
-			goto default;
+		//	goto default;
 		}
 	case TokenType.Static:
 		if (ts.lookahead(1).type == TokenType.If) {
@@ -80,7 +80,7 @@ ir.Statement[] parseStatement(TokenStream ts)
 		} else if (ts.lookahead(1).type == TokenType.Assert) {
 			goto case TokenType.Assert;
 		} else {
-			goto default;
+		//	goto default;
 		}
 	case TokenType.Assert:
 		return [parseAssertStatement(ts)];

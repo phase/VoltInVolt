@@ -189,7 +189,7 @@ void skipBlockComment(TokenWriter tw)
 	bool looping = true;
 	while (looping) {
 		if (tw.source.eof) {
-			throw makeExpected(tw.source.location, "end of block comment");
+			throw makeExpected(tw.source.location, "end of block comment", false);
 		}
 		if (tw.source.current == '/') {
 			match(tw.source, '/');
@@ -214,7 +214,7 @@ void skipNestingComment(TokenWriter tw)
 	int depth = 1;
 	while (depth > 0) {
 		if (tw.source.eof) {
-			throw makeExpected(tw.source.location, "end of nested comment");
+			throw makeExpected(tw.source.location, "end of nested comment", false);
 		}
 		if (tw.source.current == '+') {
 			match(tw.source, '+');
@@ -270,7 +270,7 @@ bool lexIdentifier(TokenWriter tw)
 	if (identToken.value[0] == '@') {
 		auto i = identifierType(identToken.value);
 		if (i == TokenType.Identifier) {
-			throw makeExpected(identToken.location, "@attribute");
+			throw makeExpected(identToken.location, "@attribute", false);
 		}
 	}
 
@@ -670,7 +670,7 @@ bool lexCharacter(TokenWriter tw)
 	match(tw.source, '\'');
 	while (tw.source.current != '\'') {
 		if (tw.source.eof) {
-			throw makeExpected(token.location, "`'`");
+			throw makeExpected(token.location, "`'`", false);
 		}
 		if (tw.source.current == '\\') {
 			match(tw.source, '\\');
@@ -718,7 +718,7 @@ bool lexString(TokenWriter tw)
 	match(tw.source, terminator);
 	while (tw.source.current != terminator) {
 		if (tw.source.eof) {
-			throw makeExpected(token.location, "string literal terminator.");
+			throw makeExpected(token.location, "string literal terminator.", false);
 		}
 		if (!raw && tw.source.current == '\\') {
 			match(tw.source, '\\');
@@ -794,7 +794,7 @@ bool lexQString(TokenWriter tw)
 	int nest = 1;
 	while (true) {
 		if (tw.source.eof) {
-			throw makeExpected(token.location, "string literal terminator.");
+			throw makeExpected(token.location, "string literal terminator.", false);
 		}
 		if (tw.source.current == opendelimiter) {
 			match(tw.source, opendelimiter);
@@ -818,7 +818,7 @@ bool lexQString(TokenWriter tw)
 			while (look - 1 < identdelim.length) {
 				dchar c = tw.source.lookahead(look, out leof);
 				if (leof) {
-					throw makeExpected(token.location, "string literal terminator.");
+					throw makeExpected(token.location, "string literal terminator.", false);
 				}
 				if (c != identdelim[look - 1]) {
 					restart = true;
@@ -859,7 +859,7 @@ bool lexTokenString(TokenWriter tw)
 	while (nest > 0) {
 		bool retval = lexNext(dummystream);
 		if (!retval) {
-			throw makeExpected(dummystream.source.location, "token");
+			throw makeExpected(dummystream.source.location, "token", false);
 		}
 		switch (dummystream.lastAdded.type) {
 		case TokenType.OpenBrace:
@@ -869,7 +869,7 @@ bool lexTokenString(TokenWriter tw)
 			nest--;
 			break;
 		case TokenType.End:
-			throw makeExpected(dummystream.source.location, "end of token string literal");
+			throw makeExpected(dummystream.source.location, "end of token string literal", false);
 		default:
 			break;
 		}
@@ -923,7 +923,7 @@ bool lexNumber(TokenWriter tw)
 			src.next();
 			auto consumed = consume(src, '0', '1', '_');
 			if (consumed == 0) {
-				throw makeExpected(src.location, "binary digit");
+				throw makeExpected(src.location, "binary digit", false);
 			}
 		} else if (src.current == 'x' || src.current == 'X') {
 			// Hexadecimal literal.
@@ -934,7 +934,7 @@ bool lexNumber(TokenWriter tw)
 			                             'A', 'B', 'C', 'D', 'E', 'F', '_');
 			if ((src.current == '.' && src.lookahead(1, out tmp) != '.') || src.current == 'p' || src.current == 'P') return lexReal(tw);
 			if (consumed == 0) {
-				throw makeExpected(src.location, "hexadecimal digit");
+				throw makeExpected(src.location, "hexadecimal digit", false);
 			}
 		} else if (src.current == '1' || src.current == '2' || src.current == '3' || src.current == '4' || src.current == '5' ||
 				src.current == '6' || src.current == '7') {
@@ -952,7 +952,7 @@ bool lexNumber(TokenWriter tw)
 		consume(src, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_');
 		if (src.current == '.' && src.lookahead(1, out tmp) != '.') return lexReal(tw);
 	} else {
-		throw makeExpected(src.location, "integer literal");
+		throw makeExpected(src.location, "integer literal", false);
 	}
 
 	if (src.current == 'f' || src.current == 'F' || src.current == 'e' || src.current == 'E') {
@@ -1006,7 +1006,7 @@ bool lexReal(TokenWriter tw)
 		// .n
 		tw.source.next();
 		if (!isDigit(tw.source.current)) {
-			throw makeExpected(tw.source.location, "digit after decimal point");
+			throw makeExpected(tw.source.location, "digit after decimal point", false);
 		}
 		tw.source.next();
 		consume(tw.source, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_');
@@ -1023,7 +1023,7 @@ bool lexReal(TokenWriter tw)
 			                                   'a', 'b', 'c', 'd', 'e', 'f',
 			                                   'A', 'B', 'C', 'D', 'E', 'F', '_');
 			if (consumed == 0) {
-				throw makeExpected(tw.source.location, "hexadecimal digit");
+				throw makeExpected(tw.source.location, "hexadecimal digit", false);
 			}
 			if (tw.source.current == 'p' || tw.source.current == 'P') {
 				tw.source.next();
@@ -1032,7 +1032,7 @@ bool lexReal(TokenWriter tw)
 				}
 				skipRealPrologue = true;
 			} else {
-				throw makeExpected(tw.source.location, "exponent");
+				throw makeExpected(tw.source.location, "exponent", false);
 			}
 		} else {
 			// 0.n
@@ -1050,7 +1050,7 @@ bool lexReal(TokenWriter tw)
 					return stop();
 				}
 			} else {
-				throw makeExpected(tw.source.location, "non-zero digit, '_', or decimal point");
+				throw makeExpected(tw.source.location, "non-zero digit, '_', or decimal point", false);
 			}
 		}
 	} else if (isDigit(tw.source.current)) {
@@ -1063,7 +1063,7 @@ bool lexReal(TokenWriter tw)
 			return stop();
 		}
 	} else {
-		throw makeExpected(tw.source.location, "floating point literal");
+		throw makeExpected(tw.source.location, "floating point literal", false);
 	}
 
 	if (tw.source.current == 'e' || tw.source.current == 'E' || skipRealPrologue) {
@@ -1074,7 +1074,7 @@ bool lexReal(TokenWriter tw)
 			}
 		}
 		if (!isDigit(tw.source.current)) {
-			throw makeExpected(tw.source.location, "digit");
+			throw makeExpected(tw.source.location, "digit", false);
 		}
 		consume(tw.source, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_');
 		if (tw.source.current == 'L' || tw.source.current == 'f' || tw.source.current == 'F') {
@@ -1098,7 +1098,7 @@ bool lexPragma(TokenWriter tw)
 	lexNumber(tw);
 	Token Int = tw.lastAdded;
 	if (Int.type != TokenType.IntegerLiteral) {
-		throw makeExpected(Int.location, "integer literal");
+		throw makeExpected(Int.location, "integer literal", false);
 	}
 	int lineNumber = toInt(Int.value);
 	tw.pop();
@@ -1119,7 +1119,7 @@ bool lexPragma(TokenWriter tw)
 		throw panic("negative line number");
 	}
 	if (lineNumber == 0) {
-		throw makeExpected(tw.source.location, "line number greater than zero");
+		throw makeExpected(tw.source.location, "line number greater than zero", false);
 	}
 	tw.changeCurrentLocation(filename, cast(uint) lineNumber);
 

@@ -49,8 +49,8 @@ public:
 		match(ts, TokenType.Begin);
 
 		ir.Node[] ret;
-		while (ts != TokenType.End) {
-			ret ~= parseStatement(ts);
+		while (/*ts != TokenType.End!!!*/false) {
+		//	ret ~= parseStatement(ts);
 		}
 
 		return ret;

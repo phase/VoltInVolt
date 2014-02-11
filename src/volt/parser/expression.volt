@@ -89,7 +89,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 		auto token = tokens[0];
 		tokens = tokens[1 .. $];
 
-		if (token.isExp) {
+		if (/*isExp(token)!!!*/true) {
 			// If the token is an expression, add it to the output queue.
 			output ~= new ExpOrOp(token.exp);
 		} else {
@@ -111,7 +111,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 				}
 			}
 			// Push op1 onto the stack.
-			stack = op1 ~ stack;
+			// stack = op1 ~ stack; !!!
 		}
 	}
 
@@ -125,8 +125,8 @@ ir.Exp binexpToExp(intir.BinExp bin)
 
 	ir.Exp[] expstack;
 	while (output.length > 0) {
-		if (output[0].isExp) {
-			expstack = unaryToExp(output[0].exp) ~ expstack;
+		if (/*output[0].isExp!!!*/ true) {
+			//expstack = unaryToExp(output[0].exp) ~ expstack; !!!
 		} else {
 			assert(expstack.length >= 2);
 			auto binout = new ir.BinOp();
@@ -135,7 +135,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 			binout.right = expstack[0];
 			binout.op = output[0].op;
 			expstack = expstack[2 .. $];
-			expstack = binout ~ expstack;
+			//expstack = binout ~ expstack; !!!
 		}
 		output = output[1 .. $];
 	}
@@ -191,7 +191,7 @@ ir.Exp postfixToExp(Location location, intir.PostfixExp postfix, ir.Exp seed = n
 			exp.identifier = postfix.identifier;
 		} else foreach (arg; postfix.arguments) {
 			exp.arguments ~= ternaryToExp(arg);
-			exp.argumentTags ~= arg.taggedRef ? ir.Postfix.TagKind.Ref : (arg.taggedOut ? ir.Postfix.TagKind.Out : ir.Postfix.TagKind.None);
+			//exp.argumentTags ~= arg.taggedRef ? ir.Postfix.TagKind.Ref : (arg.taggedOut ? ir.Postfix.TagKind.Out : ir.Postfix.TagKind.None);
 		}
 		return postfixToExp(location, postfix.postfix, exp);
 	}
@@ -635,7 +635,7 @@ intir.TernaryExp parseTernaryExp(TokenStream ts)
 		match(ts, TokenType.Colon);
 		exp.ifFalse = parseTernaryExp(ts);
 	}
-	exp.location = ts.peek.location - origin;
+	exp.location = ts.peek.location.opSub(ref origin);
 
 	return exp;
 }
@@ -655,7 +655,8 @@ intir.BinExp parseBinExp(TokenStream ts)
 			ts.get();
 			exp.op = ir.BinOp.Op.NotIn;
 		} else {
-			goto default;
+			//goto default;
+			assert(false);
 		}
 		break;
 	case TokenType.Assign:
@@ -801,7 +802,7 @@ intir.UnaryExp parseUnaryExp(TokenStream ts)
 		exp.postExp = parsePostfixExp(ts);
 		break;
 	}
-	exp.location = ts.peek.location - origin;
+	exp.location = ts.peek.location.opSub(ref origin);
 
 	return exp;
 }
@@ -819,7 +820,7 @@ intir.NewExp parseNewExp(TokenStream ts)
 		match(ts, TokenType.CloseParen);
 	}
 
-	newExp.location = ts.peek.location - start.location;
+	newExp.location = ts.peek.location.opSub(ref start.location);
 	return newExp;
 }
 
@@ -834,7 +835,7 @@ intir.CastExp parseCastExp(TokenStream ts)
 	exp.type = parseType(ts);
 
 	auto stop = match(ts, TokenType.CloseParen);
-	exp.location = stop.location - start.location;
+	exp.location = stop.location.opSub(ref start.location);
 
 	exp.unaryExp = parseUnaryExp(ts);
 
@@ -908,8 +909,9 @@ intir.PrimaryExp parsePrimaryExp(TokenStream ts)
 	auto origin = ts.peek.location;
 	switch (ts.peek.type) {
 	case TokenType.Identifier:
-		if (ts == [TokenType.Identifier, TokenType.Assign, TokenType.Greater]) {
-			goto case TokenType.Delegate;
+		if (/*ts == [TokenType.Identifier, TokenType.Assign, TokenType.Greater]!!!*/false) {
+			//goto case TokenType.Delegate;
+			assert(false);
 		}
 		auto token = ts.get();
 		if (ts.peek.type == TokenType.Bang && ts.lookahead(1).type != TokenType.Is) {
@@ -1051,7 +1053,8 @@ intir.PrimaryExp parsePrimaryExp(TokenStream ts)
 		break;
 	case TokenType.OpenParen:
 		if (isFunctionLiteral(ts)) {
-			goto case TokenType.Delegate;
+			//goto case TokenType.Delegate;
+			assert(false);
 		}
 		match(ts, TokenType.OpenParen);
 		if (isUnambiguouslyParenType(ts)) {
@@ -1144,9 +1147,9 @@ intir.PrimaryExp parsePrimaryExp(TokenStream ts)
 		break;
 	}
 
-	exp.location = ts.peek.location - origin;
+	exp.location = ts.peek.location.opSub(ref origin);
 
-	if (ts == [TokenType.Dot, TokenType.Typeid] && exp.op != intir.PrimaryExp.Type.Typeid) {
+	if (/*ts == [TokenType.Dot, TokenType.Typeid] && exp.op != intir.PrimaryExp.Type.Typeid!!!*/false) {
 		ts.get();
 		ts.get();
 		exp.exp = primaryToExp(exp);
@@ -1219,7 +1222,7 @@ bool isFunctionLiteral(TokenStream ts)
 	if (ts.peek.type == TokenType.OpenBrace) {
 		ts.restore(mark);
 		return true;
-	} else if (ts == [TokenType.Assign, TokenType.Greater]) {
+	} else if (/*ts == [TokenType.Assign, TokenType.Greater]*/false) {
 		ts.restore(mark);
 		return true;
 	} else {

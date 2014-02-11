@@ -2,6 +2,7 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.parser.declaration;
 
+import watt.conv;
 import watt.text.format;
 
 import ir = volt.ir.ir;
@@ -37,7 +38,7 @@ ir.Node[] parseVariable(TokenStream ts)
 		// Function!
 		return [parseFunction(ts, base)];
 	} else {
-		throw makeExpected(ts.peek.location, "declaration");
+		throw makeExpected(ts.peek.location, "declaration", false);
 	}
 }
 
@@ -45,7 +46,7 @@ ir.Variable[] parseJustVariable(TokenStream ts)
 {
 	ir.Type base = parseType(ts);
 	ir.Node[] nodes = reallyParseVariable(ts, base);
-	auto vars = new ir.Variable[nodes.length];
+	auto vars = new ir.Variable[](nodes.length);
 	foreach (i, node; nodes) {
 		vars[i] = cast(ir.Variable) node;
 		assert(vars[i] !is null, "reallyParseVariable parsed non variable");
@@ -97,7 +98,7 @@ ir.Node[] reallyParseVariable(TokenStream ts, ir.Type base)
 			try {
 				d.assign = parseExp(ts);
 			} catch (CompilerError e) {
-				throw new CompilerError(e.location, e.msg, e, true);
+				throw new CompilerError(e.location, e.message, e, true);
 			}
 		}
 		decls ~= d;
@@ -138,7 +139,7 @@ ir.Type parseType(TokenStream ts)
 		base = parseTypeOf(ts);
 		break;
 	default:
-		throw makeExpected(ts.peek.location, "primitive type");
+		throw makeExpected(ts.peek.location, "primitive type", false);
 	}
 
 	base = parseTypeSigils(ts, origin, base);
@@ -146,19 +147,19 @@ ir.Type parseType(TokenStream ts)
 	switch (ts.peek.type) {
 	case TokenType.Function:
 		base = parseFunctionType(ts, base);
-		base.location = ts.peek.location - origin;
+		base.location = ts.peek.location.opSub(ref origin);
 		base = parseTypeSigils(ts, origin, base);
 		break;
 	case TokenType.Delegate:
 		base = parseDelegateType(ts, base);
-		base.location = ts.peek.location - origin;
+		base.location = ts.peek.location.opSub(ref origin);
 		base = parseTypeSigils(ts, origin, base);
 		break;
 	default:
 		break;
 	}
 
-	base.location = ts.peek.location - origin;
+	base.location = ts.peek.location.opSub(ref origin);
 
 	return base;
 }
@@ -193,13 +194,13 @@ ir.StorageType parseStorageType(TokenStream ts)
 	storageType.type = cast(ir.StorageType.Kind) ts.peek.type;
 	ts.get();
 
-	if (ts == [TokenType.Identifier, TokenType.Semicolon] ||
-		ts == [TokenType.Identifier, TokenType.Assign, TokenType.Void, TokenType.Semicolon]) {
+	if (/*ts == [TokenType.Identifier, TokenType.Semicolon] ||
+		ts == [TokenType.Identifier, TokenType.Assign, TokenType.Void, TokenType.Semicolon]*/false) {
 		throw makeCannotInfer(ts.peek.location);
 	} else if (matchIf(ts, TokenType.OpenParen)) {
 		storageType.base = parseType(ts);
 		match(ts, TokenType.CloseParen);
-	} else if (!(ts == [TokenType.Identifier, TokenType.Assign])) {
+	} else if (/*!(ts == [TokenType.Identifier, TokenType.Assign])*/true) {
 		storageType.base = parseType(ts);
 	}
 
@@ -259,7 +260,7 @@ ir.Variable[] parseParameterList(TokenStream ts, ir.CallableType parentCallable)
 	while (ts.peek.type != TokenType.CloseParen) {
 		if (matchIf(ts, TokenType.TripleDot)) {
 			if (parentCallable is null) {
-				throw makeExpected(ts.peek.location, "function or delegate");
+				throw makeExpected(ts.peek.location, "function or delegate", false);
 			}
 			parentCallable.hasVarArgs = true;
 			break;
@@ -267,11 +268,11 @@ ir.Variable[] parseParameterList(TokenStream ts, ir.CallableType parentCallable)
 		auto var = parseParameter(ts);
 		// foo(int a, int[] b...)
 		if (matchIf(ts, TokenType.TripleDot)) {
-			if (!isArray(var.type)) {
-				throw makeExpected(ts.peek.location, "array argument for homogenous variadic");
-			}
+			/*if (!isArray(var.type)) {
+				throw makeExpected(ts.peek.location, "array argument for homogenous variadic", false);
+			} !!! */
 			if (ts.peek.type != TokenType.CloseParen) {
-				throw makeExpected(ts.peek.location, "homogenous variadic argument to be final argument");
+				throw makeExpected(ts.peek.location, "homogenous variadic argument to be final argument", false);
 			}
 			parentCallable.hasVarArgs = false;
 			parentCallable.homogenousVariadic = true;
@@ -282,7 +283,7 @@ ir.Variable[] parseParameterList(TokenStream ts, ir.CallableType parentCallable)
 			ts.get();
 			if (matchIf(ts, TokenType.TripleDot)) {
 				if (ts.peek.type != TokenType.CloseParen) {
-					throw makeExpected(ts.peek.location, "var args to be last argument");
+					throw makeExpected(ts.peek.location, "var args to be last argument", false);
 				}
 				parentCallable.hasVarArgs = true;
 			}
@@ -331,7 +332,7 @@ ir.Variable parseParameter(TokenStream ts)
 	} else if (ts.peek.type != TokenType.Comma && ts.peek.type != TokenType.CloseParen) {
 		throw makeExpected(ts.peek.location, "',', ')', or an identifier", ts.peek.value);
 	}
-	p.location = ts.peek.location - origin;
+	p.location = ts.peek.location.opSub(ref origin);
 
 	return p;
 }
@@ -339,11 +340,12 @@ ir.Variable parseParameter(TokenStream ts)
 // Parse things that go on the end of types like * or []. If none, base is returned.
 ir.Type parseTypeSigils(TokenStream ts, Location origin, ir.Type base)
 {
-	LOOP: while (true) switch (ts.peek.type) {
+	bool LOOP = true;
+	while (LOOP) switch (ts.peek.type) {
 	case TokenType.Asterix:
 		auto end = ts.get();
 		auto p = new ir.PointerType();
-		p.location = end.location - origin;
+		p.location = end.location.opSub(ref origin);
 		p.base = base;
 		base = p;
 		break;
@@ -353,7 +355,7 @@ ir.Type parseTypeSigils(TokenStream ts, Location origin, ir.Type base)
 			// Dynamic array.
 			auto end = match(ts, TokenType.CloseBracket);
 			auto a = new ir.ArrayType();
-			a.location = end.location - origin;
+			a.location = end.location.opSub(ref origin);
 			a.base = base;
 			base = a;
 		} else if (ts.peek.type == TokenType.IntegerLiteral) {
@@ -361,22 +363,23 @@ ir.Type parseTypeSigils(TokenStream ts, Location origin, ir.Type base)
 			auto integer = ts.get();
 			auto end = match(ts, TokenType.CloseBracket);
 			auto a = new ir.StaticArrayType();
-			a.location = end.location - origin;
+			a.location = end.location.opSub(ref origin);
 			a.base = base;
-			a.length = to!int(integer.value);
+			a.length = cast(size_t) toInt(integer.value);
 			base = a;
 		} else {
 			// Associative array.
 			auto a = new ir.AAType();
 			a.value = base;
 			a.key = parseType(ts);
-			a.location = ts.peek.location - origin;
+			a.location = ts.peek.location.opSub(ref origin);
 			match(ts, TokenType.CloseBracket);
 			base = a;
 		}
 		break;
 	default:
-		break LOOP;
+		LOOP = false;
+		break;
 	}
 	return base;
 }
@@ -417,7 +420,7 @@ ir.Function parseFunction(TokenStream ts, ir.Type base)
 		fn.params ~= p;
 	}
 	//fn.type.params = parseParameterList(ts, fn.type);
-	fn.type.location = ts.previous.location - fn.type.ret.location;
+	fn.type.location = ts.previous().location.opSub(ref fn.type.ret.location);
 
 	bool inBlocks = ts.peek.type != TokenType.Semicolon;
 	while (inBlocks) {
@@ -457,7 +460,7 @@ ir.Function parseFunction(TokenStream ts, ir.Type base)
 			fn._body = parseBlock(ts);
 			break;
 		default:
-			throw makeExpected(ts.peek.location, "block declaration");
+			throw makeExpected(ts.peek.location, "block declaration", false);
 		}
 	}
 	if (ts.peek.type == TokenType.Semicolon) {
@@ -473,8 +476,8 @@ ir.BlockStatement parseBlock(TokenStream ts)
 	bs.location = ts.peek.location;
 
 	match(ts, TokenType.OpenBrace);
-	while (ts != TokenType.CloseBrace) {
-		bs.statements ~= parseStatement(ts);
+	while (ts.opEquals(TokenType.CloseBrace)) {
+		//bs.statements ~= parseStatement(ts); !!!
 	}
 	match(ts, TokenType.CloseBrace);
 
