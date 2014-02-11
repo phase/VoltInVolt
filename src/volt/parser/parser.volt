@@ -2,7 +2,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.parser.parser;
 
-import std.stdio : writefln;
+import watt.io;
+import watt.text.format;
 
 import volt.token.location : Location;
 import volt.token.lexer : lex;
@@ -55,7 +56,7 @@ public:
 		return ret;
 	}
 
-	void close()
+	override void close()
 	{
 
 	}
@@ -63,20 +64,20 @@ public:
 protected:
 	void doDumpLex(TokenStream ts)
 	{
-		writefln("Dumping lexing:");
+		output.writeln("Dumping lexing:");
 
 		// Skip first begin
 		ts.get();
 
 		ir.Token t;
 		while((t = ts.get()).type != TokenType.End) {
-			string l = t.location.toString;
+			string l = t.location.toString();
 			string tStr = tokenToString[t.type];
 			string v = t.value;
-			writefln("%s %s \"%s\"", l, tStr, v);
+			output.writeln(format("%s %s \"%s\"", l, tStr, v));
 		}
 
-		writefln("");
+		output.writeln("");
 
 		ts.reset();
 	}
