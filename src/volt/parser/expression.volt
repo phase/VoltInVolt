@@ -1139,7 +1139,7 @@ intir.PrimaryExp parsePrimaryExp(TokenStream ts)
 		auto mark = ts.save();
 		try {
 			exp.op = intir.PrimaryExp.Type.FunctionLiteral;
-			exp.functionLiteral = parseFunctionLiteral(ts);
+			//exp.functionLiteral = parseFunctionLiteral(ts); !!!
 		} catch (CompilerError e) {
 			ts.restore(mark);
 			throw makeExpected(ts.peek.location, "primary expression", false);
