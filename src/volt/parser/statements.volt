@@ -76,9 +76,9 @@ ir.Statement[] parseStatement(TokenStream ts)
 		}
 	case TokenType.Static:
 		if (ts.lookahead(1).type == TokenType.If) {
-			goto case TokenType.Version;
+			//goto case TokenType.Version;
 		} else if (ts.lookahead(1).type == TokenType.Assert) {
-			goto case TokenType.Assert;
+			//goto case TokenType.Assert;
 		} else {
 		//	goto default;
 		}
@@ -189,11 +189,11 @@ ir.BlockStatement parseBlockStatement(TokenStream ts)
 
 	if (matchIf(ts, TokenType.OpenBrace)) {
 		while (ts.peek.type != TokenType.CloseBrace) {
-			bs.statements ~= parseStatement(ts);
+			//bs.statements ~= parseStatement(ts);
 		}
 		match(ts, TokenType.CloseBrace);
 	} else {
-		bs.statements ~= parseStatement(ts);
+		//bs.statements ~= parseStatement(ts);
 	}
 
 	return bs;
@@ -281,7 +281,7 @@ ir.ForeachStatement parseForeachStatement(TokenStream ts)
 		bool isRef = matchIf(ts, TokenType.Ref);
 		ir.Type type;
 		ir.Token name;
-		if (ts == [TokenType.Identifier, TokenType.Comma] || ts == [TokenType.Identifier, TokenType.Semicolon]) {
+		if (/*ts == [TokenType.Identifier, TokenType.Comma] || ts == [TokenType.Identifier, TokenType.Semicolon]*/ false) {
 			name = match(ts, TokenType.Identifier);
 			auto st = new ir.StorageType();
 			st.location = name.location;
@@ -425,7 +425,7 @@ ir.SwitchStatement parseSwitchStatement(TokenStream ts)
 				type == TokenType.CloseBrace) {
 				break;
 			}
-			bs.statements ~= parseStatement(ts);
+			//bs.statements ~= parseStatement(ts);
 		}
 		return bs;
 	}
