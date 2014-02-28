@@ -410,6 +410,7 @@ public:
 		}
 		errorDefined(fn.location, name);
 		assert(false);
+		return null;
 	}
 
 	/**

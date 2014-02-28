@@ -208,6 +208,8 @@ public:
 				return c;
 			}
 		}
+		assert(false);
+		return '#';
 	}
 
 	/**
