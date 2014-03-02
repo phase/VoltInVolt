@@ -101,6 +101,7 @@ Scope getScopeFromType(Type type)
 	default:
 		return null;
 	}
+	assert(false);
 }
 
 /**
@@ -127,6 +128,7 @@ Scope getScopeFromStore(Store store)
 	case Alias:
 		throw panic(store.node.location, "unresolved alias");
 	}
+	assert(false);
 }
 
 /**
@@ -214,6 +216,7 @@ Type copyTypeSmart(Location loc, Type type)
 	default:
 		throw panicUnhandled(type.location, cast(string) toString(type.nodeType));
 	}
+	assert(false);
 }
 
 TypeReference buildTypeReference(Location loc, Type type, string[] names...)
