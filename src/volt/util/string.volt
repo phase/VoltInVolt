@@ -105,7 +105,7 @@ void[] unescapeString(Location location, const char[] s)
 				case 'r': encode(ref output, '\r'); break;
 				case 't': encode(ref output, '\t'); break;
 				case 'v': encode(ref output, '\v'); break;
-				case '0': encode(ref output, 0); break;
+				case '0': encode(ref output, '\0'); break;
 				case 'x':
 					escaping = false;
 					hexing = true;
