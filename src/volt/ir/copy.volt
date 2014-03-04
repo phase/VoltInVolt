@@ -280,6 +280,7 @@ Type copyType(Type t)
 	default:
 		assert(false);
 	}
+	assert(false);
 }
 
 /**
@@ -423,4 +424,5 @@ Node copyNode(Node n)
 		auto msg = format("invalid node '%s'", toString(n.nodeType));
 		throw panic(n.location, msg);
 	}
+	assert(false);
 }
