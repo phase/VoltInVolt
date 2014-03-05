@@ -14,19 +14,11 @@ int main(string[] args)
 		printf("usage: %s [files]\n", args[0]);
 		return 1;
 	}
-	for (size_t i = 1; i < args.length; i++) {
-		auto src = new Source(args[i]);
-		auto tstream = lex(src);
-		Token token;
-		printf("---%s---\n", args[i]);
-		do { 
-			token = tstream.get();
-			printf("%s", tokenToString[token.type]);
-			printf("(%s)\n", token.location.toString());
-		} while (token.type != TokenType.End);
-		printf("\n");
-		auto mod = parseModule(tstream);
-		printf("Parsed a file!\n");
+	foreach (arg; args) {
+		auto src = new Source(arg);
+		auto ts = lex(src);
+		auto mod = parseModule(ts);
+		printf("Parsed file %s.\n", arg);
 	}
 	return 0;
 }
