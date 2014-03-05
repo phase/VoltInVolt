@@ -85,6 +85,7 @@ int getPrecedence(BinOp.Op operator)
 	default:
 		assert(false);
 	}
+	assert(false);
 }
 
 class UnaryExp : IntExp

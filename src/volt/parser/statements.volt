@@ -107,6 +107,7 @@ ir.Statement[] parseStatement(TokenStream ts)
 			return cast(ir.Statement[]) node;
 		}
 	}
+	assert(false);
 }
 
 /* Try to parse as a declaration first because

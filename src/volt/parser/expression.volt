@@ -195,6 +195,7 @@ ir.Exp postfixToExp(Location location, intir.PostfixExp postfix, ir.Exp seed = n
 		}
 		return postfixToExp(location, postfix.postfix, exp);
 	}
+	assert(false);
 }
 
 ir.Exp primaryToExp(intir.PrimaryExp primary)
@@ -589,6 +590,7 @@ ir.FunctionLiteral parseFunctionLiteral(TokenStream ts)
 		fn.block = parseBlock(ts);
 		return fn;
 	}
+	assert(false);
 }
 
 ir.TraitsExp parseTraitsExp(TokenStream ts)

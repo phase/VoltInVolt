@@ -5,6 +5,8 @@ import core.stdc.stdio;
 import volt.token.source;
 import volt.token.lexer;
 import volt.token.token;
+import volt.parser.toplevel;
+import ir = volt.ir.ir;
 
 int main(string[] args)
 {
@@ -14,12 +16,7 @@ int main(string[] args)
 	}
 	for (size_t i = 1; i < args.length; i++) {
 		auto src = new Source(args[i]);
-		TokenStream tstream;
-		try {
-			tstream = lex(src);
-		} catch (Exception) {
-			return 3;
-		}
+		auto tstream = lex(src);
 		Token token;
 		printf("---%s---\n", args[i]);
 		do { 
@@ -28,6 +25,8 @@ int main(string[] args)
 			printf("(%s)\n", token.location.toString());
 		} while (token.type != TokenType.End);
 		printf("\n");
+		auto mod = parseModule(tstream);
+		printf("Parsed a file!\n");
 	}
 	return 0;
 }
