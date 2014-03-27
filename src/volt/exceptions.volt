@@ -42,7 +42,7 @@ public:
 	{
 		this.more = more;
 		this.neverIgnore = neverIgnore;
-		super(format(errorFormat(), message)/*, file, line*/);
+		super(format(errorFormat(), message, file, line));
 		return;
 	}
 
@@ -52,7 +52,7 @@ public:
 		this.location = loc;
 		this.hasLocation = true;
 		this.neverIgnore = neverIgnore;
-		super(format(locationFormat(), loc.toString(), message)/*, file, line*/);
+		super(format(locationFormat(), loc.toString(), message, file, line));
 		return;
 	}
 
