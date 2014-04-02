@@ -13,8 +13,8 @@ int main(string[] args)
 {
 	try {
 		return realMain(args);
-	} catch (CompilerException e) {
-		output.writefln("Caught unhandled exception: '%s'\n", e.message);
+	} catch (Exception e) {
+		output.writefln("%s", e.message);
 		return 1;
 	}
 	assert(false);
@@ -34,4 +34,3 @@ int realMain(string[] args)
 	}
 	return 0;
 }
-
