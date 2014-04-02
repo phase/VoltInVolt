@@ -20,6 +20,7 @@ import volt.parser.expression;
 
 ir.Module parseModule(TokenStream ts)
 {
+	match(ts, TokenType.Begin);
 	auto t = match(ts, TokenType.Module);
 	auto qn = parseQualifiedName(ts);
 	match(ts, TokenType.Semicolon);
