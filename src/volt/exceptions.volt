@@ -16,7 +16,7 @@ abstract class CompilerException : Exception
 {
 public:
 	Location location;
-	bool hasLocation/* = false*/;
+	bool hasLocation = false;
 
 	/**
 	 * This error is not to be swallowed when retrying
@@ -30,7 +30,7 @@ public:
 	 * from the declaration parser that are much more directed
 	 * than the failure the expression parser would give.
 	 */
-	bool neverIgnore/* = false*/;
+	bool neverIgnore = false;
 
 	CompilerError more; // Optional
 	string fixHint; // Optional
