@@ -26,7 +26,7 @@ int realMain(string[] args)
 		output.writefln("usage: %s [files]\n", args[0]);
 		return 1;
 	}
-	foreach (arg; args[1 .. $]) {
+	foreach (arg; args[1 .. args.length]) {
 		auto src = new Source(arg);
 		auto ts = lex(src);
 		auto mod = parseModule(ts);

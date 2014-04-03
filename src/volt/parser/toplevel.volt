@@ -63,38 +63,38 @@ body
 
 	switch (ts.peek.type) {
 		case TokenType.Import:
-			//tlb.nodes ~= [parseImport(ts, inModule)];
+			tlb.nodes ~= [cast(ir.Node) parseImport(ts, inModule)];
 			break;
 		case TokenType.Unittest:
-			//tlb.nodes ~= [parseUnittest(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseUnittest(ts)];
 			break;
 		case TokenType.This:
-			//tlb.nodes ~= [parseConstructor(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseConstructor(ts)];
 			break;
 		case TokenType.Tilde:  // XXX: Is this unambiguous?
-			//tlb.nodes ~= [parseDestructor(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseDestructor(ts)];
 			break;
 		case TokenType.Union:
-			//tlb.nodes ~= [parseUnion(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseUnion(ts)];
 			break;
 		case TokenType.Struct:
-			//tlb.nodes ~= [parseStruct(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseStruct(ts)];
 			break;
 		case TokenType.Class:
-			//tlb.nodes ~= [parseClass(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseClass(ts)];
 			break;
 		case TokenType.Interface:
-			//tlb.nodes ~= [parseInterface(ts)];
+			tlb.nodes ~= [cast(ir.Node) parseInterface(ts)];
 			break;
 		case TokenType.Enum:
-			//tlb.nodes ~= parseEnum(ts);
+			tlb.nodes ~= parseEnum(ts);
 			break;
 		case TokenType.Mixin:
 			auto next = ts.lookahead(1).type;
 			if (next == TokenType.Function) {
-		//		tlb.nodes ~= [parseMixinFunction(ts)];
+				tlb.nodes ~= [cast(ir.Node) parseMixinFunction(ts)];
 			} else if (next == TokenType.Template) {
-		//		tlb.nodes ~= [parseMixinTemplate(ts)];
+				tlb.nodes ~= [cast(ir.Node) parseMixinTemplate(ts)];
 			} else {
 				auto err = ts.lookahead(1);
 				throw makeExpected(err.location, "'function' or 'template'", false);
@@ -108,7 +108,7 @@ body
 			}
 		case TokenType.At:
 			if (ts.lookahead(1).type == TokenType.Interface) {
-		//		tlb.nodes ~= [parseUserAttribute(ts)];
+				tlb.nodes ~= [cast(ir.Node) parseUserAttribute(ts)];
 				break;
 			} else {
 				//goto case;
@@ -130,11 +130,11 @@ body
 		case TokenType.Inout:
 		case TokenType.Nothrow:
 		case TokenType.Pure:
-		//	tlb.nodes ~= [parseAttribute(ts, inModule)];
+			tlb.nodes ~= [cast(ir.Node) parseAttribute(ts, inModule)];
 			break;
 		case TokenType.Version:
 		case TokenType.Debug:
-		//	tlb.nodes ~= [parseConditionTopLevel(ts, inModule)];
+			tlb.nodes ~= [cast(ir.Node) parseConditionTopLevel(ts, inModule)];
 			break;
 		case TokenType.Static:
 			auto next = ts.lookahead(1).type;
@@ -143,21 +143,21 @@ body
 			} else if (next == TokenType.This) {
 				//goto case TokenType.This;
 			} else if (next == TokenType.Assert) {
-				//tlb.nodes ~= [parseStaticAssert(ts)];
+				tlb.nodes ~= [cast(ir.Node) parseStaticAssert(ts)];
 			} else if (next == TokenType.If) {
 				//goto case TokenType.Version;
 			} else {
-		//		tlb.nodes ~= [parseAttribute(ts, inModule)];
+				tlb.nodes ~= [cast(ir.Node) parseAttribute(ts, inModule)];
 			}
 			break;
 		case TokenType.Semicolon:
 			auto empty = new ir.EmptyTopLevel();
 			empty.location = ts.peek.location;
 			match(ts, TokenType.Semicolon);
-		//	tlb.nodes ~= [empty];
+			tlb.nodes ~= [cast(ir.Node) empty];
 			break;
 		default:
-		//	tlb.nodes ~= parseVariable(ts);
+			tlb.nodes ~= parseVariable(ts);
 			break;
 	}
 
@@ -176,7 +176,7 @@ body
 
 	while (ts.peek.type != end && ts.peek.type != TokenType.End) {
 		auto tmp = parseOneTopLevelBlock(ts, inModule);
-		//tlb.nodes ~= tmp.nodes;
+		tlb.nodes ~= tmp.nodes;
 	}
 
 	return tlb;
