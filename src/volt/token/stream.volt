@@ -71,7 +71,7 @@ public:
 	 * Side-effects:
 	 *   None.
 	 */
-	bool opEquals(TokenType type)
+	bool opEqual(TokenType type)
 	{
 		return mTokens[mIndex].type == type;
 	}
@@ -83,14 +83,14 @@ public:
 	 * Side-effects:
 	 *   None.
 	 */
-	int opEquals(TokenType[] types)
+	bool opEqual(TokenType[] types)
 	{
 		foreach(uint i, right; types) {
 			TokenType left = lookahead(i).type;
 			if (left != right)
-				return 0;
+				return false;
 		}
-		return 1;
+		return true;
 	}
 
 	/**

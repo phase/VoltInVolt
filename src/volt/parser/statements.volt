@@ -13,6 +13,15 @@ import volt.parser.declaration;
 import volt.parser.expression;
 import volt.parser.toplevel;
 
+ir.Node[] parseStatementAsNodes(TokenStream ts)
+{
+	auto statements = parseStatement(ts);
+	auto nodes = new ir.Node[](statements.length);
+	for (size_t i = 0; i < statements.length; i++) {
+		nodes[i] = cast(ir.Node) statements[i];
+	}
+	return nodes;
+}
 
 ir.Statement[] parseStatement(TokenStream ts)
 {
@@ -190,11 +199,11 @@ ir.BlockStatement parseBlockStatement(TokenStream ts)
 
 	if (matchIf(ts, TokenType.OpenBrace)) {
 		while (ts.peek.type != TokenType.CloseBrace) {
-			//bs.statements ~= parseStatement(ts);
+			bs.statements ~= parseStatementAsNodes(ts);
 		}
 		match(ts, TokenType.CloseBrace);
 	} else {
-		//bs.statements ~= parseStatement(ts);
+		bs.statements ~= parseStatementAsNodes(ts);
 	}
 
 	return bs;
@@ -282,7 +291,7 @@ ir.ForeachStatement parseForeachStatement(TokenStream ts)
 		bool isRef = matchIf(ts, TokenType.Ref);
 		ir.Type type;
 		ir.Token name;
-		if (/*ts == [TokenType.Identifier, TokenType.Comma] || ts == [TokenType.Identifier, TokenType.Semicolon]*/ false) {
+		if (ts == [TokenType.Identifier, TokenType.Comma] || ts == [TokenType.Identifier, TokenType.Semicolon]) {
 			name = match(ts, TokenType.Identifier);
 			auto st = new ir.StorageType();
 			st.location = name.location;
@@ -426,7 +435,7 @@ ir.SwitchStatement parseSwitchStatement(TokenStream ts)
 				type == TokenType.CloseBrace) {
 				break;
 			}
-			//bs.statements ~= parseStatement(ts);
+			bs.statements ~= parseStatementAsNodes(ts);
 		}
 		return bs;
 	}

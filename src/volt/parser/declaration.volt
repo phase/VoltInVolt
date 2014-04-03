@@ -194,13 +194,13 @@ ir.StorageType parseStorageType(TokenStream ts)
 	storageType.type = cast(ir.StorageType.Kind) ts.peek.type;
 	ts.get();
 
-	if (/*ts == [TokenType.Identifier, TokenType.Semicolon] ||
-		ts == [TokenType.Identifier, TokenType.Assign, TokenType.Void, TokenType.Semicolon]*/false) {
+	if (ts == [TokenType.Identifier, TokenType.Semicolon] ||
+		ts == [TokenType.Identifier, TokenType.Assign, TokenType.Void, TokenType.Semicolon]) {
 		throw makeCannotInfer(ts.peek.location);
 	} else if (matchIf(ts, TokenType.OpenParen)) {
 		storageType.base = parseType(ts);
 		match(ts, TokenType.CloseParen);
-	} else if (/*!(ts == [TokenType.Identifier, TokenType.Assign])*/true) {
+	} else if (!(ts == [TokenType.Identifier, TokenType.Assign])) {
 		storageType.base = parseType(ts);
 	}
 
@@ -476,8 +476,8 @@ ir.BlockStatement parseBlock(TokenStream ts)
 	bs.location = ts.peek.location;
 
 	match(ts, TokenType.OpenBrace);
-	while (ts.opEquals(TokenType.CloseBrace)) {
-		//bs.statements ~= parseStatement(ts); !!!
+	while (ts == TokenType.CloseBrace){
+		bs.statements ~= parseStatementAsNodes(ts);
 	}
 	match(ts, TokenType.CloseBrace);
 
