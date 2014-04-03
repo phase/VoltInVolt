@@ -89,7 +89,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 		auto token = tokens[0];
 		tokens = tokens[1 .. $];
 
-		if (/*isExp(token)!!!*/true) {
+		if (token.isExp()) {
 			// If the token is an expression, add it to the output queue.
 			output ~= new ExpOrOp(token.exp);
 		} else {
