@@ -76,6 +76,11 @@ public:
 		return mTokens[mIndex].type == type;
 	}
 
+	bool opNotEqual(TokenType type)
+	{
+		return mTokens[mIndex].type != type;
+	}
+
 	/**
 	 * Compares from the current token and onwards type against
 	 * the list of types.

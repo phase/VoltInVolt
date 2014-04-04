@@ -30,7 +30,7 @@ ir.Module parseModule(TokenStream ts)
 
 	mod.children = parseTopLevelBlock(ts, TokenType.End, true);
 
-	mod.children.nodes = [
+	mod.children.nodes	 = [
 			createImport(mod.location, "defaultsymbols", false),
 			createImport(mod.location, "object", true)
 		] ~ mod.children.nodes;
@@ -63,7 +63,7 @@ body
 
 	switch (ts.peek.type) {
 		case TokenType.Import:
-			tlb.nodes ~= [cast(ir.Node) parseImport(ts, inModule)];
+			tlb.nodes ~= [parseImport(ts, inModule)];
 			break;
 		case TokenType.Unittest:
 			tlb.nodes ~= [cast(ir.Node) parseUnittest(ts)];

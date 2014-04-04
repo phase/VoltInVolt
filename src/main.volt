@@ -13,7 +13,7 @@ int main(string[] args)
 {
 	try {
 		return realMain(args);
-	} catch (Exception e) {
+	} catch (object.Throwable e) {
 		output.writefln("%s", e.message);
 		return 1;
 	}

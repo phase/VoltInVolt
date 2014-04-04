@@ -25,7 +25,7 @@ import volt.token.location;
 ir.Node[] parseVariable(TokenStream ts)
 {
 	if (ts.peek.type == TokenType.Alias) {
-		return [parseAlias(ts)];
+		return [cast(ir.Node) parseAlias(ts)];
 	}
 
 	ir.Type base = parseType(ts);
@@ -36,7 +36,7 @@ ir.Node[] parseVariable(TokenStream ts)
 		return reallyParseVariable(ts, base);
 	} else if (ts.lookahead(1).type == TokenType.OpenParen) {
 		// Function!
-		return [parseFunction(ts, base)];
+		return [cast(ir.Node) parseFunction(ts, base)];
 	} else {
 		throw makeExpected(ts.peek.location, "declaration", false);
 	}
@@ -419,7 +419,6 @@ ir.Function parseFunction(TokenStream ts, ir.Type base)
 		p.fn = fn;
 		fn.params ~= p;
 	}
-	//fn.type.params = parseParameterList(ts, fn.type);
 	fn.type.location = ts.previous().location.opSub(ref fn.type.ret.location);
 
 	bool inBlocks = ts.peek.type != TokenType.Semicolon;
@@ -476,7 +475,7 @@ ir.BlockStatement parseBlock(TokenStream ts)
 	bs.location = ts.peek.location;
 
 	match(ts, TokenType.OpenBrace);
-	while (ts == TokenType.CloseBrace){
+	while (ts != TokenType.CloseBrace) {
 		bs.statements ~= parseStatementAsNodes(ts);
 	}
 	match(ts, TokenType.CloseBrace);
