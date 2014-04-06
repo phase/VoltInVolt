@@ -49,11 +49,13 @@ class ExpOrOp
 	this(intir.UnaryExp exp)
 	{
 		this.exp = exp;
+		return;
 	}
 
 	this(ir.BinOp.Op op)
 	{
 		this.op = op;
+		return;
 	}
 
 	bool isExp()
@@ -74,6 +76,15 @@ ExpOrOp[] gatherExps(intir.BinExp bin)
 	return list;
 }
 
+ir.Exp[] pushExp(ir.Exp[] stack, ir.Exp exp)
+{
+	// Oh dear.
+	auto newStack = new ir.Exp[](stack.length + 1);
+	newStack[0] = exp;
+	newStack[1 .. newStack.length] = stack[];
+	return newStack;
+}
+
 ir.Exp binexpToExp(intir.BinExp bin)
 {
 	// Ladies and gentlemen, Mr. Edsger Dijkstra's shunting-yard algorithm! (polite applause)
@@ -87,7 +98,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 	while (tokens.length > 0) {
 		// Read a token.
 		auto token = tokens[0];
-		tokens = tokens[1 .. $];
+		tokens = tokens[1 .. tokens.length];
 
 		if (token.isExp()) {
 			// If the token is an expression, add it to the output queue.
@@ -103,7 +114,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 				// or op1 has precedence < op2) {
 					// pop op2 off the stack
 					auto op2 = stack[0];
-					stack = stack[1 .. $];
+					stack = stack[1 .. stack.length];
 					// and onto the output queue.
 					output ~= new ExpOrOp(op2); 
 				} else {
@@ -111,7 +122,11 @@ ir.Exp binexpToExp(intir.BinExp bin)
 				}
 			}
 			// Push op1 onto the stack.
-			// stack = op1 ~ stack; !!!
+
+			auto newStack = new ir.BinOp.Op[](stack.length + 1);
+			newStack[0] = op1;
+			newStack[1 .. newStack.length] = stack[];
+			//stack = op1 ~ stack; !!!
 		}
 	}
 
@@ -120,12 +135,13 @@ ir.Exp binexpToExp(intir.BinExp bin)
 	while (stack.length > 0) {
 		// Pop the operator onto the output queue.
 		output ~= new ExpOrOp(stack[0]);
-		stack = stack[1 .. $];
+		stack = stack[1 .. stack.length];
 	}
 
 	ir.Exp[] expstack;
 	while (output.length > 0) {
-		if (/*output[0].isExp!!!*/ true) {
+		if (output[0].isExp()) {
+			expstack = pushExp(expstack, unaryToExp(output[0].exp));
 			//expstack = unaryToExp(output[0].exp) ~ expstack; !!!
 		} else {
 			assert(expstack.length >= 2);
@@ -134,10 +150,11 @@ ir.Exp binexpToExp(intir.BinExp bin)
 			binout.left = expstack[1];
 			binout.right = expstack[0];
 			binout.op = output[0].op;
-			expstack = expstack[2 .. $];
+			expstack = expstack[2 .. expstack.length];
+			expstack = pushExp(expstack, binout);
 			//expstack = binout ~ expstack; !!!
 		}
-		output = output[1 .. $];
+		output = output[1 .. output.length];
 	}
 	assert(expstack.length == 1);
 	return expstack[0];
