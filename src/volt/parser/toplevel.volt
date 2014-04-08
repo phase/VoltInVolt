@@ -192,7 +192,7 @@ ir.Node parseImport(TokenStream ts, bool inModule)
 	_import.location = ts.peek.location;
 	match(ts, TokenType.Import);
 
-	if (/*ts == [TokenType.Identifier, TokenType.Assign]*/false) {
+	if (ts == [TokenType.Identifier, TokenType.Assign]) {
 		// import <a = b.c>
 		_import.bind = parseIdentifier(ts);
 		match(ts, TokenType.Assign);

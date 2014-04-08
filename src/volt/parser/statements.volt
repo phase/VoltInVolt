@@ -25,6 +25,25 @@ ir.Node[] parseStatementAsNodes(TokenStream ts)
 
 ir.Statement[] parseStatement(TokenStream ts)
 {
+	ir.Statement[] doDefault()
+	{
+		ir.Node[] node = parseVariableOrExpression(ts);
+		if (node[0].nodeType != ir.NodeType.Variable && node[0].nodeType != ir.NodeType.Function) {
+			// create an ExpStatement out of an Expression
+			match(ts, TokenType.Semicolon);
+			auto es = new ir.ExpStatement();
+			es.location = node[0].location;
+			auto asExp = cast(ir.Exp) node[0];
+			assert(asExp !is null);
+			es.exp = asExp;
+			return [es];
+		} else {
+			// return a regular declaration
+			return cast(ir.Statement[]) node;
+		}
+		assert(false);
+	}
+
 	switch (ts.peek.type) {
 	case TokenType.Semicolon:
 		return [cast(ir.Statement) parseEmptyStatement(ts)];
@@ -44,8 +63,6 @@ ir.Statement[] parseStatement(TokenStream ts)
 		return [cast(ir.Statement) parseForStatement(ts)];
 	case TokenType.Foreach, TokenType.ForeachReverse:
 		return [cast(ir.Statement) parseForeachStatement(ts)];
-	case TokenType.Switch:
-		return [cast(ir.Statement) parseSwitchStatement(ts)];
 	case TokenType.Break:
 		return [cast(ir.Statement) parseBreakStatement(ts)];
 	case TokenType.Continue:
@@ -68,53 +85,38 @@ ir.Statement[] parseStatement(TokenStream ts)
 				return [cast(ir.Statement) parseScopeStatement(ts)];
 			}
 		}
-		//goto default;
+		return doDefault();
 	case TokenType.Pragma:
 		return [cast(ir.Statement) parsePragmaStatement(ts)];
 	case TokenType.Identifier:
 		if (ts.lookahead(1).type == TokenType.Colon) {
 			return [cast(ir.Statement) parseLabelStatement(ts)];
 		} else {
-		//	goto default;
+			return doDefault();
 		}
 	case TokenType.Final:
-		if (ts.lookahead(1).type == TokenType.Switch) {
-		//	goto case TokenType.Switch;
-		} else {
-		//	goto default;
+		if (ts.lookahead(1).type != TokenType.Switch) {
+			return doDefault();
 		}
+	case TokenType.Switch:
+		return [cast(ir.Statement) parseSwitchStatement(ts)];
 	case TokenType.Static:
 		if (ts.lookahead(1).type == TokenType.If) {
-			//goto case TokenType.Version;
 		} else if (ts.lookahead(1).type == TokenType.Assert) {
-			//goto case TokenType.Assert;
+			return [cast(ir.Statement) parseAssertStatement(ts)];
 		} else {
-		//	goto default;
+			return doDefault();
 		}
-	case TokenType.Assert:
-		return [cast(ir.Statement) parseAssertStatement(ts)];
 	case TokenType.Version:
 	case TokenType.Debug:
 		ir.Statement[] condstate = [cast(ir.Statement) parseConditionStatement(ts)];
 		return condstate;
+	case TokenType.Assert:
+		return [cast(ir.Statement) parseAssertStatement(ts)];
 	case TokenType.Mixin:
 		return [cast(ir.Statement) parseMixinStatement(ts)];
 	default:
-		ir.Node[] node = parseVariableOrExpression(ts);
-		if (node[0].nodeType != ir.NodeType.Variable && node[0].nodeType != ir.NodeType.Function) {
-			// create an ExpStatement out of an Expression
-			match(ts, TokenType.Semicolon);
-			auto es = new ir.ExpStatement();
-			es.location = node[0].location;
-			auto asExp = cast(ir.Exp) node[0];
-			assert(asExp !is null);
-			es.exp = asExp;
-			return [es];
-
-		} else {
-			// return a regular declaration
-			return cast(ir.Statement[]) node;
-		}
+		return doDefault();
 	}
 	assert(false);
 }
