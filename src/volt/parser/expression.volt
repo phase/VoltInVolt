@@ -81,7 +81,7 @@ ir.Exp[] pushExp(ir.Exp[] stack, ir.Exp exp)
 	// Oh dear.
 	auto newStack = new ir.Exp[](stack.length + 1);
 	newStack[0] = exp;
-	newStack[1 .. newStack.length] = stack[];
+	newStack[1 .. newStack.length] = stack[0 .. stack.length];
 	return newStack;
 }
 
@@ -281,8 +281,8 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 		c._string = primary._string;
 		// c.type = immutable(char)[]
 		c.type = buildArrayType(primary.location, buildStorageType(primary.location, ir.StorageType.Kind.Immutable, buildPrimitiveType(primary.location, ir.PrimitiveType.Kind.Char)));
-		assert((c._string[$-1] == '"' || c._string[$-1] == '`') && c._string.length >= 2);
-		c.arrayData = unescapeString(primary.location, c._string[1 .. $-1]);
+		assert((c._string[c._string.length-1] == '"' || c._string[c._string.length-1] == '`') && c._string.length >= 2, "A");
+		c.arrayData = unescapeString(primary.location, c._string[1 .. c._string.length-1]);
 		exp = c;
 		break;
 	case intir.PrimaryExp.Type.CharLiteral:
@@ -290,22 +290,22 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 		c._string = primary._string;
 		c.type = new ir.PrimitiveType(ir.PrimitiveType.Kind.Char);
 		c.type.location = primary.location;
-		assert(c._string[$-1] == '\'' && c._string.length >= 3);
-		c.arrayData = unescapeString(primary.location, c._string[1 .. $-1]);
+		assert(c._string[c._string.length-1] == '\'' && c._string.length >= 3);
+		c.arrayData = unescapeString(primary.location, c._string[1 .. c._string.length-1]);
 		exp = c;
 		break;
 	case intir.PrimaryExp.Type.FloatLiteral:
 		auto c = new ir.Constant();
 		auto base = ir.PrimitiveType.Kind.Double;
 		c._string = primary._string;
-		while (c._string[$-1] == 'f' || c._string[$-1] == 'F' ||
-			   c._string[$-1] == 'L') {
-			if (c._string[$-1] == 'f' || c._string[$-1] == 'F') {
+		while (c._string[c._string.length-1] == 'f' || c._string[c._string.length-1] == 'F' ||
+			   c._string[c._string.length-1] == 'L') {
+			if (c._string[c._string.length-1] == 'f' || c._string[c._string.length-1] == 'F') {
 				base = ir.PrimitiveType.Kind.Float;
-			} else if (c._string[$-1] == 'L') {
+			} else if (c._string[c._string.length-1] == 'L') {
 				base = ir.PrimitiveType.Kind.Double;
 			}
-			c._string = c._string[0 .. $-1];
+			c._string = c._string[0 .. c._string.length-1];
 		}
 		if (base == ir.PrimitiveType.Kind.Float) {
 		//	c._float = to!float(c._string);
@@ -325,16 +325,16 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 		bool explicitBase;
 
 		// If there are any suffixes, change the type to match.
-		while (c._string[$-1] == 'u' || c._string[$-1] == 'U' ||
-			   c._string[$-1] == 'L') {
-			if (c._string[$-1] == 'u' || c._string[$-1] == 'U') {
+		while (c._string[c._string.length-1] == 'u' || c._string[c._string.length-1] == 'U' ||
+			   c._string[c._string.length-1] == 'L') {
+			if (c._string[c._string.length-1] == 'u' || c._string[c._string.length-1] == 'U') {
 				explicitBase = true;
 				if (base == ir.PrimitiveType.Kind.Long) {
 					base = ir.PrimitiveType.Kind.Ulong;
 				} else {
 					base = ir.PrimitiveType.Kind.Uint;
 				}
-			} else if (c._string[$-1] == 'L') {
+			} else if (c._string[c._string.length-1] == 'L') {
 				explicitBase = true;
 				if (base == ir.PrimitiveType.Kind.Uint) {
 					base = ir.PrimitiveType.Kind.Ulong;
@@ -342,12 +342,12 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 					base = ir.PrimitiveType.Kind.Long;
 				}
 			}
-			c._string = c._string[0 .. $-1];
+			c._string = c._string[0 .. c._string.length-1];
 		}
 
 		if (c._string.length > 2 && (c._string[0 .. 2] == "0x" || c._string[0 .. 2] == "0b")) {
 			auto prefix = c._string[0 .. 2];
-			c._string = c._string[2 .. $];
+			c._string = c._string[2 .. c._string.length];
 			auto v = cast(ulong) toInt(c._string, prefix == "0x" ? 16 : 2);
 			if (v > uint.max) {
 				if (!explicitBase)
@@ -395,7 +395,7 @@ ir.Exp primaryToExp(intir.PrimaryExp primary)
 		auto c = new ir.AssocArray();
 		for (size_t i = 0; i < primary.keys.length; ++i) {
 			c.pairs ~= new ir.AAPair(ternaryToExp(primary.keys[i]), ternaryToExp(primary.arguments[i]));
-			c.pairs[$-1].location = primary.keys[i].location;
+			c.pairs[c.pairs.length-1].location = primary.keys[i].location;
 		}
 		exp = c;
 		break;

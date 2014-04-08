@@ -36,7 +36,7 @@ ir.Statement[] parseStatement(TokenStream ts)
 			auto asExp = cast(ir.Exp) node[0];
 			assert(asExp !is null);
 			es.exp = asExp;
-			return [es];
+			return [cast(ir.Statement) es];
 		} else {
 			// return a regular declaration
 			return cast(ir.Statement[]) node;
