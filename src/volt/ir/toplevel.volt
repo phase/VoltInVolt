@@ -101,6 +101,11 @@ public:
 	this() { super(NodeType.TopLevelBlock); }
 }
 
+struct ImportAlias
+{
+	Identifier _0, _1;
+}
+
 /**
  * An Import adds a module to the search path of identifiers
  * inside the module it's in.
@@ -141,7 +146,7 @@ public:
 	Identifier bind;
 
 	/// Optional, import a : <b = c, d>
-	Identifier[2][] aliases;
+	ImportAlias[] aliases;
 
 	/// This points at the imported module -- filled in by ImportResolver.
 	Module targetModule;

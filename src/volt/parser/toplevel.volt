@@ -203,6 +203,7 @@ ir.Node parseImport(TokenStream ts, bool inModule)
 	}
 
 	// Parse out any aliases.
+	_import.aliases = new ir.ImportAlias[](0);
 	if (matchIf(ts, TokenType.Colon)) {
 		// import a : <b, c = d>
 		bool first = true;
@@ -213,12 +214,13 @@ ir.Node parseImport(TokenStream ts, bool inModule)
 				}
 			}
 			first = false;
-			_import.aliases.length = _import.aliases.length + 1;
-			_import.aliases[_import.aliases.length - 1][0] = parseIdentifier(ts);
+			ir.ImportAlias ia;
+			ia._0 = parseIdentifier(ts);
 			if (matchIf(ts, TokenType.Assign)) {
 				// import a : b, <c = d>
-				_import.aliases[_import.aliases.length - 1][1] = parseIdentifier(ts);
+				ia._1 = parseIdentifier(ts);
 			}
+			_import.aliases ~= ia;
 		} while (ts.peek.type == TokenType.Comma);
 	}
 
