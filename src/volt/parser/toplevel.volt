@@ -102,7 +102,7 @@ body
 			break;
 		case TokenType.Const:
 			if (ts.lookahead(1).type == TokenType.OpenParen) {
-				//goto default;
+				tlb.nodes ~= parseVariable(ts); break;
 			} else {
 				//goto case;
 			}
@@ -214,10 +214,10 @@ ir.Node parseImport(TokenStream ts, bool inModule)
 			}
 			first = false;
 			_import.aliases.length = _import.aliases.length + 1;
-			_import.aliases[$ - 1][0] = parseIdentifier(ts);
+			_import.aliases[_import.aliases.length - 1][0] = parseIdentifier(ts);
 			if (matchIf(ts, TokenType.Assign)) {
 				// import a : b, <c = d>
-				_import.aliases[$ - 1][1] = parseIdentifier(ts);
+				_import.aliases[_import.aliases.length - 1][1] = parseIdentifier(ts);
 			}
 		} while (ts.peek.type == TokenType.Comma);
 	}
@@ -466,7 +466,7 @@ ir.Node[] parseEnum(TokenStream ts)
 	ir.Type base;
 	if (matchIf(ts, TokenType.Colon)) {
 		base = parseType(ts);
-	} else if (/*ts == [TokenType.Identifier, TokenType.Colon] || ts == [TokenType.Identifier, TokenType.OpenBrace]*/false) {
+	} else if (ts == [TokenType.Identifier, TokenType.Colon] || ts == [TokenType.Identifier, TokenType.OpenBrace]) {
 		// Named enum.
 		namedEnum = new ir.Enum();
 		namedEnum.location = origin;
@@ -527,7 +527,7 @@ ir.Node[] parseEnum(TokenStream ts)
 		if (namedEnum !is null) {
 			throw makeExpected(ts.peek.location, "'{'", false);
 		}
-		if (/*ts != [TokenType.Identifier, TokenType.Assign]*/false) {
+		if (!(ts == [TokenType.Identifier, TokenType.Assign])) {
 			base = parseType(ts);
 		} else {
 			base = buildStorageType(ts.peek.location, ir.StorageType.Kind.Auto, null);
