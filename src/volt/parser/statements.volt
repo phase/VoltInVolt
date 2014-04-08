@@ -39,7 +39,11 @@ ir.Statement[] parseStatement(TokenStream ts)
 			return [cast(ir.Statement) es];
 		} else {
 			// return a regular declaration
-			return cast(ir.Statement[]) node;
+			auto statements = new ir.Statement[](node.length);
+			for (size_t i = 0; i < node.length; i++) {
+				statements[i] = cast(ir.Statement) node[i];
+			}
+			return statements;
 		}
 		assert(false);
 	}
@@ -311,9 +315,9 @@ ir.ForeachStatement parseForeachStatement(TokenStream ts)
 			type = st;
 		}
 		f.itervars ~= new ir.Variable();
-		f.itervars[$-1].location = type.location;
-		f.itervars[$-1].type = type;
-		f.itervars[$-1].name = name.value;
+		f.itervars[f.itervars.length-1].location = type.location;
+		f.itervars[f.itervars.length-1].type = type;
+		f.itervars[f.itervars.length-1].name = name.value;
 		matchIf(ts, TokenType.Comma);
 	}
 	match(ts, TokenType.Semicolon);
@@ -357,7 +361,7 @@ ir.ForStatement parseForStatement(TokenStream ts)
 		} else {
 			foreach (var; first) {
 				f.initVars ~= cast(ir.Variable) var;
-				assert(f.initVars[$-1] !is null);
+				assert(f.initVars[f.initVars.length-1] !is null);
 			}
 		}
 	} else {
