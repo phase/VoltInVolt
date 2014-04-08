@@ -126,6 +126,7 @@ ir.Exp binexpToExp(intir.BinExp bin)
 			auto newStack = new ir.BinOp.Op[](stack.length + 1);
 			newStack[0] = op1;
 			newStack[1 .. newStack.length] = stack[];
+			stack = newStack;
 			//stack = op1 ~ stack; !!!
 		}
 	}
