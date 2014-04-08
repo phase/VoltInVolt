@@ -410,6 +410,7 @@ ir.SwitchStatement parseSwitchStatement(TokenStream ts)
 	match(ts, TokenType.Switch);
 	match(ts, TokenType.OpenParen);
 	ss.condition = parseExp(ts);
+	ss.withs = new ir.Exp[](0);
 	match(ts, TokenType.CloseParen);
 
 	while (matchIf(ts, TokenType.With)) {

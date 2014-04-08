@@ -178,8 +178,9 @@ ir.Exp unaryToExp(intir.UnaryExp unary)
 		exp.op = unary.op;
 		exp.type = unary.newExp.type;
 		exp.hasArgumentList = unary.newExp.hasArgumentList;
-		foreach (arg; unary.newExp.argumentList) {
-			exp.argumentList ~= ternaryToExp(arg);
+		exp.argumentList = new ir.Exp[](unary.newExp.argumentList.length);
+		for (size_t i = 0; i < exp.argumentList.length; i++) {
+			exp.argumentList[i] = ternaryToExp(unary.newExp.argumentList[i]);
 		}
 		return exp;
 	} else {
