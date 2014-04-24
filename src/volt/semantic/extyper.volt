@@ -2057,6 +2057,14 @@ void handleNestedParams(Context ctx, ir.Function fn)
 	}
 }
 
+
+struct ArrayCase
+{
+	ir.Exp originalExp;
+	ir.SwitchCase _case;
+	ir.IfStatement lastIf;
+}
+
 /**
  * Ensure that a given switch statement is semantically sound.
  * Errors on bad final switches (doesn't cover all enum members, not on an enum at all),
@@ -2079,12 +2087,6 @@ void verifySwitchStatement(Context ctx, ir.SwitchStatement ss)
 		conditionType = buildUint(ss.condition.location);
 	}
 
-	struct ArrayCase
-	{
-		ir.Exp originalExp;
-		ir.SwitchCase _case;
-		ir.IfStatement lastIf;
-	}
 	ArrayCase[uint] arrayCases;
 	size_t[] toRemove;  // Indices of cases that have been folded into a collision case.
 
@@ -2989,7 +2991,6 @@ public:
 			if (as is null || as.isStatic) {
 				continue;
 			}
-			import std.stdio;
 			bs.statements[i] = transformRuntimeAssert(ctx, as);
 		}
 		return Continue;
