@@ -3,8 +3,8 @@
 // Routines to retrieve the types of expressions.
 module volt.semantic.typer;
 
-import std.conv : to;
-import std.string : format;
+import watt.conv;
+import watt.text.format;
 
 import ir = volt.ir.ir;
 import volt.ir.copy;

@@ -1,7 +1,7 @@
 module volt.semantic.ctfe;
 
-import std.conv : to;
-import std.string : format;
+import watt.conv;
+import watt.text.format;
 
 import ir = volt.ir.ir;
 import volt.ir.copy;

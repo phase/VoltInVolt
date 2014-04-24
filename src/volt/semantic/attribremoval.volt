@@ -2,8 +2,6 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.semantic.attribremoval;
 
-import std.stdio : writefln;
-
 import volt.ir.util;
 
 import ir = volt.ir.ir;
