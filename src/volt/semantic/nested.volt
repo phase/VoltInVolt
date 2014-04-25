@@ -2,8 +2,7 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.semantic.nested;
 
-import std.algorithm : remove;
-import std.conv : to;
+import watt.conv;
 
 import volt.errors;
 import ir = volt.ir.ir;

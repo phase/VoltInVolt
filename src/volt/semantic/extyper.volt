@@ -3,10 +3,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.semantic.extyper;
 
-import std.algorithm : remove;
-import std.array : insertInPlace;
-import std.conv : to;
-import std.string : format, translate;
+import watt.conv;
+import watt.text.format;
 
 import ir = volt.ir.ir;
 import volt.ir.util;

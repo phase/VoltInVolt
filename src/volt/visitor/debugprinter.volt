@@ -2,9 +2,7 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.visitor.debugprinter;
 
-import std.stdio : writefln, writef;
-import std.stream : Stream, File, FileMode;
-import std.cstream : dout;
+import watt.io;
 
 import volt.token.token;
 

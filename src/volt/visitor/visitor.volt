@@ -3,8 +3,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.visitor.visitor;
 
-import std.conv : to;
-import std.string : format;
+import watt.conv;
+import watt.text.format;
 
 import volt.errors;
 import ir = volt.ir.ir;

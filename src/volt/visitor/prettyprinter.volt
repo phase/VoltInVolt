@@ -3,9 +3,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.visitor.prettyprinter;
 
-import std.stream : Stream, File, FileMode;
-import std.cstream : dout;
-import std.string : format;
+import watt.io;
+import watt.text.format;
 
 import volt.token.token;
 
