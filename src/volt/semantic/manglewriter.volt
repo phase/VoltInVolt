@@ -2,8 +2,8 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.semantic.manglewriter;
 
-import std.conv;
-import std.stdio;
+import watt.conv;
+import watt.io;
 
 import ir = volt.ir.ir;
 

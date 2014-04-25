@@ -2,8 +2,7 @@
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.semantic.llvmlowerer;
 
-import std.string : format;
-import std.file : baseName;
+import watt.text.format;
 
 import ir = volt.ir.ir;
 import volt.ir.copy;
