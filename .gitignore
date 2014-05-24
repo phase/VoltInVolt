@@ -1,0 +1,23 @@
+
+# Build system
+/volt
+/volt.*
+/volta
+/volta.*
+.obj
+.pkg
+*.tar.gz
+
+# Temporary files produced by the compiler
+*.ll
+*.bc
+*.o
+*.a
+a.out*
+a.exe*
+
+# Misc files
+b.bat
+
+# IDE files
+*.kdev*
