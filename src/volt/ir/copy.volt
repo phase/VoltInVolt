@@ -16,7 +16,7 @@ Constant copy(Constant cnst)
 	auto c = new Constant();
 	c.location = cnst.location;
 	c.type = (cnst.type !is null ? copyType(cnst.type) : null);
-	c._ulong = cnst._ulong;
+	c.u._ulong = cnst.u._ulong;
 	c._string = cnst._string;
 	c.isNull = cnst.isNull;
 	c.arrayData = cnst.arrayData[0 .. cnst.arrayData.length];

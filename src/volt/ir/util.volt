@@ -438,7 +438,7 @@ Constant buildConstantInt(Location loc, int value)
 {
 	auto c = new Constant();
 	c.location = loc;
-	c._int = value;
+	c.u._int = value;
 	c.type = buildInt(loc);
 
 	return c;
@@ -448,7 +448,7 @@ Constant buildConstantUint(Location loc, uint value)
 {
 	auto c = new Constant();
 	c.location = loc;
-	c._uint = value;
+	c.u._uint = value;
 	c.type = buildUint(loc);
 
 	return c;
@@ -458,7 +458,7 @@ Constant buildConstantLong(Location loc, long value)
 {
 	auto c = new Constant();
 	c.location = loc;
-	c._long = value;
+	c.u._long = value;
 	c.type = buildLong(loc);
 
 	return c;
@@ -468,7 +468,7 @@ Constant buildConstantUlong(Location loc, ulong value)
 {
 	auto c = new Constant();
 	c.location = loc;
-	c._ulong = value;
+	c.u._ulong = value;
 	c.type = buildUlong(loc);
 
 	return c;
@@ -481,7 +481,7 @@ Constant buildConstantBool(Location loc, bool val)
 {
 	auto c = new Constant();
 	c.location = loc;
-	c._bool = val;
+	c.u._bool = val;
 	c.type = buildBool(loc);
 
 	return c;
@@ -491,7 +491,7 @@ Constant buildConstantNull(Location loc, Type base)
 {
 	auto c = new Constant();
 	c.location = loc;
-	c._pointer = null;
+	c.u._pointer = null;
 	c.type = copyTypeSmart(loc, base);
 	c.type.location = loc;
 	c.isNull = true;
@@ -508,9 +508,9 @@ Constant buildSizeTConstant(Location loc, LanguagePass lp, int val)
 	auto prim = lp.settings.getSizeT(loc);
 	// Uh, I assume just c._uint = val would work, but I can't test it here, so just be safe.
 	if (prim.type == PrimitiveType.Kind.Ulong) {
-		c._ulong = val;
+		c.u._ulong = val;
 	} else {
-		c._uint = cast(uint) val;
+		c.u._uint = cast(uint) val;
 	}
 	c.type = prim;
 	return c;
@@ -540,7 +540,7 @@ Constant buildConstant(Location loc, EnumDeclaration ed)
 	auto cnst = cast(Constant) ed.assign;
 	auto c = new Constant();
 	c.location = loc;
-	c._ulong = cnst._ulong;
+	c.u._ulong = cnst.u._ulong;
 	c._string = cnst._string;
 	c.arrayData = cnst.arrayData;
 	c.type = copyTypeSmart(loc, ed.type);
