@@ -36,17 +36,17 @@ ALL_SRC = $(shell find src -name "*.volt")
 # Targets.
 #
 
-all: $(TARGET)
+all: run
 
 $(TARGET): $(SRC) GNUmakefile
 	@echo "  VOLT   $(TARGET)"
 	@$(VOLT) -I src $(VFLAGS) $(LDFLAGS) -o $(TARGET) $(SRC)
 
-run: all
+run: $(TARGET)
 	@echo "  RUN    $(TARGET)"
 	@./$(TARGET) $(ALL_SRC)
 
-debug: all
+debug: $(TARGET)
 	@echo "  DBG    $(TARGET)"
 	@gdb --args ./$(TARGET) test/simple.volt
 
