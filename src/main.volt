@@ -28,9 +28,11 @@ int realMain(string[] args)
 	}
 	foreach (arg; args[1 .. args.length]) {
 		auto src = new Source(arg);
+		output.writef("Parsing file %s ... ", arg);
+		output.flush();
 		auto ts = lex(src);
 		auto mod = parseModule(ts);
-		output.writefln("Parsed file %s.\n", arg);
+		output.writefln("done");
 	}
 	return 0;
 }

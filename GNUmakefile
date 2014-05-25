@@ -29,6 +29,8 @@ SRC = \
 #	src/volt/visitor/*.volt
 #	src/volt/semantic/*.volt
 
+ALL_SRC = $(shell find src -name "*.volt")
+
 
 ########################################
 # Targets.
@@ -42,7 +44,7 @@ $(TARGET): $(SRC) GNUmakefile
 
 run: all
 	@echo "  RUN    $(TARGET)"
-	@./$(TARGET) test/simple.volt
+	@./$(TARGET) $(ALL_SRC)
 
 debug: all
 	@echo "  DBG    $(TARGET)"
