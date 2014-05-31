@@ -15,6 +15,7 @@ final class TokenWriter
 {
 private:
 	Source mSource;
+	size_t mLength;
 	Token[] mTokens;
 
 public:
@@ -26,7 +27,6 @@ public:
 	{
 		this.mSource = source;
 		initTokenArray();
-		return;
 	}
 
 	/**
@@ -48,13 +48,18 @@ public:
 	 *   None.
 	 */
 	void addToken(Token token)
-	{
-		if (token is null) {
-			throw new Exception("adding null Token");
+	in {
+		assert(token !is null);
+	}
+	body {
+		if (mTokens.length <= mLength) {
+			auto tokens = new Token[](mLength * 2 + 3);
+			tokens[0 .. mLength] = mTokens;
+			mTokens = tokens;
 		}
-		mTokens ~= token;
+
+		mTokens[mLength++] = token;
 		token.location.length = token.value.length;
-		return;
 	}
 
 	/**
@@ -65,9 +70,11 @@ public:
 	 *   mTokens is shortened by one.
 	 */
 	void pop()
-	{
-		mTokens = mTokens[0 .. $-1];
-		return;
+	in {
+		assert(mLength > 0);
+	}
+	body {
+		mTokens[--mLength] = null;
 	}
 
 	/**
@@ -77,12 +84,11 @@ public:
 	 *   None.
 	 */
 	@property Token lastAdded()
-	{
-		auto tok = mTokens[mTokens.length - 1];
-		if (tok is null) {
-			throw new Exception("null Token");
-		}
-		return tok;
+	in {
+		assert(mLength > 0);
+	}
+	body {
+		return mTokens[mLength - 1];
 	}
 
 	/**
@@ -96,8 +102,11 @@ public:
 	 */
 	TokenStream getStream()
 	{
-		auto tstream = new TokenStream(mTokens);
+		auto ret = new Token[](mLength);
+		ret[] = mTokens[0 .. mLength];
 		initTokenArray();
+
+		auto tstream = new TokenStream(ret);
 		return tstream;
 	}
 
@@ -131,6 +140,7 @@ private:
 		// Reset the token array
 		mTokens = new Token[](1);
 		mTokens[0] = start;
+		mLength = 1;
 		return;
 	}
 }
