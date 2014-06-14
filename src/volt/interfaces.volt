@@ -159,9 +159,9 @@ public:
 public:
 	this(Settings settings, Frontend frontend, Controller controller)
 	out {
-		////assert(this.settings !is null);
-		////assert(this.frontend !is null);
-		////assert(this.controller !is null);
+		//assert(this.settings !is null);
+		//assert(this.frontend !is null);
+		//assert(this.controller !is null);
 	}
 	body {
 		this.settings = settings;

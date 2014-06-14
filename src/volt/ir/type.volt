@@ -130,8 +130,8 @@ public:
 class TypeReference : Type
 {
 public:
-	Type type;  /// What Type this refers to. Filled in after parsing sometime.
-	QualifiedName id; /// The name of the Type. Filled in the initial parsing.
+	Type type;  ///< What Type this refers to. Filled in after parsing sometime.
+	QualifiedName id; ///< The name of the Type. Filled in the initial parsing.
 
 public:
 	this() { super(NodeType.TypeReference); }

@@ -468,7 +468,7 @@ class StructLiteral : Exp
 {
 public:
 	Exp[] exps;
-	Type type;  /// Filled in Later.
+	Type type;  ///< Filled in Later.
 
 public:
 	this() { super(NodeType.StructLiteral); }

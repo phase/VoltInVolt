@@ -12,7 +12,7 @@ public import volt.ir.expression;
 public import volt.ir.declaration;
 
 
-/**
+/*
  * @defgroup irNode IR Nodes
  *
  * The Volt IR is a representation of types and execution.
