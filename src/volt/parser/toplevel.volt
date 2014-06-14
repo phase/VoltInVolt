@@ -104,14 +104,14 @@ body
 			if (ts.lookahead(1).type == TokenType.OpenParen) {
 				tlb.nodes ~= parseVariable(ts); break;
 			} else {
-				//goto case;
+				goto case;
 			}
 		case TokenType.At:
 			if (ts.lookahead(1).type == TokenType.Interface) {
 				tlb.nodes ~= [cast(ir.Node) parseUserAttribute(ts)];
 				break;
 			} else {
-				//goto case;
+				goto case;
 			}
 		case TokenType.Extern:
 		case TokenType.Align:
@@ -139,13 +139,13 @@ body
 		case TokenType.Static:
 			auto next = ts.lookahead(1).type;
 			if (next == TokenType.Tilde) {
-				//goto case TokenType.Tilde;
+				goto case TokenType.Tilde;
 			} else if (next == TokenType.This) {
-				//goto case TokenType.This;
+				goto case TokenType.This;
 			} else if (next == TokenType.Assert) {
 				tlb.nodes ~= [cast(ir.Node) parseStaticAssert(ts)];
 			} else if (next == TokenType.If) {
-				//goto case TokenType.Version;
+				goto case TokenType.Version;
 			} else {
 				tlb.nodes ~= [cast(ir.Node) parseAttribute(ts, inModule)];
 			}

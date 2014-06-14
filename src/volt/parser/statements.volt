@@ -102,15 +102,18 @@ ir.Statement[] parseStatement(TokenStream ts)
 		if (ts.lookahead(1).type != TokenType.Switch) {
 			return doDefault();
 		}
+		goto case;
 	case TokenType.Switch:
 		return [cast(ir.Statement) parseSwitchStatement(ts)];
 	case TokenType.Static:
 		if (ts.lookahead(1).type == TokenType.If) {
+			assert(false);
 		} else if (ts.lookahead(1).type == TokenType.Assert) {
 			return [cast(ir.Statement) parseAssertStatement(ts)];
 		} else {
 			return doDefault();
 		}
+		break;
 	case TokenType.Version:
 	case TokenType.Debug:
 		ir.Statement[] condstate = [cast(ir.Statement) parseConditionStatement(ts)];
