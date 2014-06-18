@@ -155,7 +155,7 @@ ir.Store lookup(LanguagePass lp, ir.Scope _scope, Location loc, string name)
 			return ensureResolved(lp, store);
 		}
 
-		/// Check publically imported modules.
+		// Check publically imported modules.
 		foreach (i, submod; mod.myScope.importedModules) {
 			if (mod.myScope.importedAccess[i] == ir.Access.Public) {
 				store = submod.myScope.getStore(name);
@@ -166,7 +166,7 @@ ir.Store lookup(LanguagePass lp, ir.Scope _scope, Location loc, string name)
 		}
 	}
 
-	/// @todo Error if we found multiple matches in importedScopes.
+	// @todo Error if we found multiple matches in importedScopes.
 
 	return null;
 }

@@ -354,7 +354,7 @@ void extypeAssignClass(Context ctx, ref ir.Exp exp, ir.Class _class)
 	}
 	ctx.lp.resolve(rightClass);
 
-	/// Check for converting child classes into parent classes.
+	// Check for converting child classes into parent classes.
 	if (_class !is null && rightClass !is null) {
 		if (inheritsFrom(rightClass, _class)) {
 			exp = buildCastSmart(exp.location, _class, exp);
@@ -1497,7 +1497,7 @@ void extypePostfixIdentifier(Context ctx, ref ir.Exp exp, ir.Postfix postfix)
 	// Now do the looping.
 	do {
 		if (store is null) {
-			/// @todo keep track of what the context was that we looked into.
+			// @todo keep track of what the context was that we looked into.
 			throw makeFailedLookup(loc, ident);
 		}
 

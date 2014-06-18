@@ -56,7 +56,7 @@ public:
 	Pass[] postParse;
 	Pass[] passes2;
 	Pass[] passes3;
-	/**
+	/*
 	 * @}
 	 */
 
