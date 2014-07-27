@@ -43,7 +43,6 @@ public:
 		this.more = more;
 		this.neverIgnore = neverIgnore;
 		super(format(errorFormat(), message, file, line));
-		return;
 	}
 
 	this(Location loc, string message, CompilerError more, bool neverIgnore, string file = __FILE__, size_t line = __LINE__)
@@ -53,7 +52,6 @@ public:
 		this.hasLocation = true;
 		this.neverIgnore = neverIgnore;
 		super(format(locationFormat(), loc.toString(), message, file, line));
-		return;
 	}
 
 protected:
@@ -78,37 +76,31 @@ class CompilerError : CompilerException
 	this(string message, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(message, null, false, file, line);
-		return;
 	}
 
 	this(string message, CompilerError more, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(message, more, false, file, line);
-		return;
 	}
 
 	this(Location loc, string message, bool neverIgnore, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(loc, message, null, neverIgnore, file, line);
-		return;
 	}
 
 	this(Location loc, string message, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(loc, message, null, false, file, line);
-		return;
 	}
 
 	this(Location loc, string message, CompilerError more, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(loc, message, more, false, file, line);
-		return;
 	}
 
 	this(Location loc, string message, CompilerError more, bool neverIgnore, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(loc, message, more, neverIgnore, file, line);
-		return;
 	}
 }
 
@@ -123,7 +115,6 @@ public:
 		super(loc, format("missing ';' after %s.", type), file, line);
 
 		fixHint = ";";
-		return;
 	}
 }
 
@@ -140,7 +131,6 @@ public:
 		fixHint = token;
 
 		more = new CompilerError(pairStart, format("%s started here.", type));
-		return;
 	}
 }
 
@@ -149,21 +139,18 @@ class ArgumentMismatchError : CompilerError
 {
 public:
 	enum ptrdiff_t unspecified = -1;
-	ptrdiff_t argNumber;// = unspecified;
+	ptrdiff_t argNumber = unspecified;
 
 public:
 	this(Location loc, string message, string file = __FILE__, size_t line = __LINE__)
 	{
-		argNumber = unspecified;
 		super(loc, message, file, line);
-		return;
 	}
 
 	this(Location loc, string message, ptrdiff_t argNumber, string file = __FILE__, size_t line = __LINE__)
 	{
 		this.argNumber = argNumber;
 		super(loc, message, file, line);
-		return;
 	}
 }
 
@@ -176,13 +163,11 @@ public:
 	this(string message, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(message, null, true, file, line);
-		return;
 	}
 
 	this(Location loc, string message, string file = __FILE__, size_t line = __LINE__)
 	{
 		super(loc, message, null, true, file, line);
-		return;
 	}
 
 override:
@@ -200,5 +185,4 @@ override:
 void errorMessageOnly(Location loc, string message, string file = __FILE__, size_t line = __LINE__)
 {
 	printf("%s\n", format("%s: error: %s", loc.toString(), message));
-	return;
 }
