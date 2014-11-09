@@ -1,4 +1,4 @@
-// Copyright © 2010-2013, Bernard Helyer.  All rights reserved.
+// Copyright © 2010, Bernard Helyer.  All rights reserved.
 // Copyright © 2011, Jakob Ovrum.  All rights reserved.
 // Copyright © 2012, Jakob Bornecrantz.  All rights reserved.
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
@@ -15,18 +15,15 @@ import watt.text.format;
 struct Location
 {
 public:
-	/// When the column is 0, the whole line is assumed to be the location
-	enum size_t wholeLine = 0;
-
 	string filename;
-	size_t line;// = 1;
-	size_t column;// = 1;
-	size_t length;// = 0;
+	size_t line;
+	size_t column;
+	size_t length;
 
 public:
 	string toString()
 	{
-		return format("%s:%s:%s", filename, line + 1, column + 1);
+		return format("%s:%s:%s", filename, line + 1, column);
 	}
 
 	/**
@@ -45,9 +42,9 @@ public:
 		loc.column = begin.column;
 
 		if (line != begin.line) {
-			loc.length = cast(size_t) -1; // End of line
+			loc.length = cast(uint) -1; // End of line
 		} else {
-			//assert(begin.column <= column);
+			assert(begin.column <= column);
 			loc.length = column + length - begin.column;
 		}
 
@@ -71,4 +68,3 @@ public:
 		}
 	}
 }
-
