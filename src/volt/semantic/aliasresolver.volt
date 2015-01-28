@@ -36,7 +36,7 @@ void resolveAlias(LanguagePass lp, ir.Store s)
 	}
 
 	if (ret is null) {
-		throw makeFailedLookup(a, a.id.toString);
+		throw makeFailedLookup(a, a.id.toString());
 	}
 
 	s.markAliasResolved(ret);
