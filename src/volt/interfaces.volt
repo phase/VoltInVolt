@@ -1,9 +1,11 @@
-// Copyright © 2012, Jakob Bornecrantz.  All rights reserved.
+// Copyright © 2012-2014, Jakob Bornecrantz.  All rights reserved.
 // See copyright notice in src/volt/license.d (BOOST ver. 1.0).
 module volt.interfaces;
 
+import watt.text.string : indexOf, replace;
+
 import volt.token.location;
-import volt.ir.ir;
+import ir = volt.ir.ir;
 
 
 /**
@@ -11,20 +13,20 @@ import volt.ir.ir;
  * abstracts away several IO related functions. Such as looking up
  * module files and printing error messages.
  */
-class Controller
+interface Controller
 {
-	Module getModule(QualifiedName name) { return null; }
+	ir.Module getModule(ir.QualifiedName name);
 
-	void close() { return; }
+	void close();
 }
 
 /**
  * Start of the compile pipeline, it lexes source, parses tokens and do
  * some very lightweight transformation of internal AST into Volt IR.
  */
-class Frontend
+interface Frontend
 {
-	Module parseNewFile(string source, Location loc) { return null; }
+	ir.Module parseNewFile(string source, Location loc);
 
 	/**
 	 * Parse a zero or more statements from a string, does not
@@ -32,9 +34,9 @@ class Frontend
 	 *
 	 * Used for string mixins in functions.
 	 */
-	Node[] parseStatements(string source, Location loc) { return null; }
+	ir.Node[] parseStatements(string source, Location loc);
 
-	void close() { return; }
+	void close();
 }
 
 /**
@@ -53,11 +55,11 @@ class Frontend
  *
  * @ingroup passes
  */
-class Pass
+interface Pass
 {
-	void transform(Module m) { return; }
+	void transform(ir.Module m);
 
-	void close() { return; }
+	void close();
 }
 
 /**
@@ -71,10 +73,10 @@ class Pass
  * 3. Misc
  *
  * Phase 1, PostParse, works like this:
- * 1. All of the version statements are resolved for the ent module.
+ * 1. All of the version statements are resolved for the entire module.
  * 2. Then for each Module, Class, Struct, Enum's TopLevelBlock.
- *   1. Apply all attributes in the current block or dct children.
- *   2. Add symbols to scope in the current block or dct children.
+ *   1. Apply all attributes in the current block or direct children.
+ *   2. Add symbols to scope in the current block or direct children.
  *   3. Then do step a-c for for each child TopLevelBlock that
  *      brings in a new scope (Classes, Enums, Structs).
  * 3. Resolve the imports.
@@ -83,7 +85,7 @@ class Pass
  *
  * Phase 2, ExpTyper, is just a single complex step that resolves and typechecks
  * any expressions, this pass is only run for modules that are called
- * dctly by the LanguagePass.transform function, or functions that
+ * directly by the LanguagePass.transform function, or functions that
  * are invoked by static ifs.
  *
  * Phase 3, Misc, are various lowering and transformation passes, some can
@@ -94,7 +96,7 @@ class Pass
  * Center point for all language passes.
  * @ingroup passes passLang
  */
-abstract class LanguagePass
+class LanguagePass
 {
 public:
 	Settings settings;
@@ -105,63 +107,84 @@ public:
 	 * Cached lookup items.
 	 * @{
 	 */
-	Module objectModule;
-	Class objectClass;
-	Class typeInfoClass;
-	Class attributeClass;
-	Struct arrayStruct;
-	Variable allocDgVariable;
-	Function vaStartFunc;
-	Function vaEndFunc;
-	Function vaCStartFunc;
-	Function vaCEndFunc;
-	Function memcpyFunc;
-	Function throwSliceErrorFunction;
+	ir.Module objectModule;
+	ir.Class objectClass;
+	ir.Class typeInfoClass;
+	ir.Class attributeClass;
+	ir.Class assertErrorClass;
+	ir.Struct arrayStruct;
+	ir.Variable allocDgVariable;
+
+	ir.Function vaStartFunc;
+	ir.Function vaEndFunc;
+	ir.Function vaCStartFunc;
+	ir.Function vaCEndFunc;
+
+	ir.Function hashFunc;
+	ir.Function castFunc;
+	ir.Function printfFunc;
+	ir.Function memcpyFunc;
+	ir.Function memcmpFunc;
+
+	ir.Function ehThrowFunc;
+	ir.Function ehThrowSliceErrorFunc;
+	ir.Function ehPersonalityFunc;
+
+	ir.Function aaGetKeys;
+	ir.Function aaGetValues;
+	ir.Function aaGetLength;
+	ir.Function aaInArray;
+	ir.Function aaInPrimitive;
+	ir.Function aaRehash;
+	ir.Function aaGetPP;
+	ir.Function aaGetAA;
+	ir.Function aaGetPA;
+	ir.Function aaGetAP;
 	/* @} */
 
 	/**
 	 * Type id constants for TypeInfo.
 	 * @{
 	 */
-	EnumDeclaration TYPE_STRUCT;
-	EnumDeclaration TYPE_CLASS;
-	EnumDeclaration TYPE_INTERFACE;
-	EnumDeclaration TYPE_UNION;
-	EnumDeclaration TYPE_ENUM;
-	EnumDeclaration TYPE_ATTRIBUTE;
-	EnumDeclaration TYPE_USER_ATTRIBUTE;
+	ir.EnumDeclaration TYPE_STRUCT;
+	ir.EnumDeclaration TYPE_CLASS;
+	ir.EnumDeclaration TYPE_INTERFACE;
+	ir.EnumDeclaration TYPE_UNION;
+	ir.EnumDeclaration TYPE_ENUM;
+	ir.EnumDeclaration TYPE_ATTRIBUTE;
+	ir.EnumDeclaration TYPE_USER_ATTRIBUTE;
 
-	EnumDeclaration TYPE_VOID;
-	EnumDeclaration TYPE_UBYTE;
-	EnumDeclaration TYPE_BYTE;
-	EnumDeclaration TYPE_CHAR;
-	EnumDeclaration TYPE_BOOL;
-	EnumDeclaration TYPE_USHORT;
-	EnumDeclaration TYPE_SHORT;
-	EnumDeclaration TYPE_WCHAR;
-	EnumDeclaration TYPE_UINT;
-	EnumDeclaration TYPE_INT;
-	EnumDeclaration TYPE_DCHAR;
-	EnumDeclaration TYPE_FLOAT;
-	EnumDeclaration TYPE_ULONG;
-	EnumDeclaration TYPE_LONG;
-	EnumDeclaration TYPE_DOUBLE;
-	EnumDeclaration TYPE_REAL;
+	ir.EnumDeclaration TYPE_VOID;
+	ir.EnumDeclaration TYPE_UBYTE;
+	ir.EnumDeclaration TYPE_BYTE;
+	ir.EnumDeclaration TYPE_CHAR;
+	ir.EnumDeclaration TYPE_BOOL;
+	ir.EnumDeclaration TYPE_USHORT;
+	ir.EnumDeclaration TYPE_SHORT;
+	ir.EnumDeclaration TYPE_WCHAR;
+	ir.EnumDeclaration TYPE_UINT;
+	ir.EnumDeclaration TYPE_INT;
+	ir.EnumDeclaration TYPE_DCHAR;
+	ir.EnumDeclaration TYPE_FLOAT;
+	ir.EnumDeclaration TYPE_ULONG;
+	ir.EnumDeclaration TYPE_LONG;
+	ir.EnumDeclaration TYPE_DOUBLE;
+	ir.EnumDeclaration TYPE_REAL;
 
-	EnumDeclaration TYPE_POINTER;
-	EnumDeclaration TYPE_ARRAY;
-	EnumDeclaration TYPE_STATIC_ARRAY;
-	EnumDeclaration TYPE_AA;
-	EnumDeclaration TYPE_FUNCTION;
-	EnumDeclaration TYPE_DELEGATE;
+	ir.EnumDeclaration TYPE_POINTER;
+	ir.EnumDeclaration TYPE_ARRAY;
+	ir.EnumDeclaration TYPE_STATIC_ARRAY;
+	ir.EnumDeclaration TYPE_AA;
+	ir.EnumDeclaration TYPE_FUNCTION;
+	ir.EnumDeclaration TYPE_DELEGATE;
 	/* @} */
 
 public:
 	this(Settings settings, Frontend frontend, Controller controller)
 	out {
-		//assert(this.settings !is null);
-		//assert(this.frontend !is null);
-		//assert(this.controller !is null);
+		assert(this.settings !is null);
+		assert(this.frontend !is null);
+		assert(this.controller !is null);
 	}
 	body {
 		this.settings = settings;
@@ -174,7 +197,7 @@ public:
 	/**
 	 * Helper function, often just routed to the Controller.
 	 */
-	abstract Module getModule(QualifiedName name);
+	abstract ir.Module getModule(ir.QualifiedName name);
 
 	/*
 	 *
@@ -190,28 +213,28 @@ public:
 	 * block statements into already gathered functions, for
 	 * instance when processing mixin statemetns.
 	 */
-	abstract void gather(Scope current, BlockStatement bs);
+	abstract void gather(ir.Scope current, ir.BlockStatement bs);
 
 	/**
 	 * Resolves a Variable making it usable externaly.
 	 *
 	 * @throws CompilerError on failure to resolve variable.
 	 */
-	abstract void resolve(Scope current, Variable v);
+	abstract void resolve(ir.Scope current, ir.Variable v);
 
 	/**
 	 * Resolves a Function making it usable externaly,
 	 *
 	 * @throws CompilerError on failure to resolve function.
 	 */
-	abstract void resolve(Scope current, Function fn);
+	abstract void resolve(ir.Scope current, ir.Function fn);
 
 	/**
 	 * Resolves a unresolved TypeReference in the given scope.
 	 * The TypeReference's type is set to the looked up type,
 	 * should type be not null nothing is done.
 	 */
-	abstract void resolve(Scope s, TypeReference tr);
+	abstract void resolve(ir.Scope s, ir.TypeReference tr);
 
 	/**
 	 * Resolves a unresolved alias store, the store can
@@ -221,66 +244,73 @@ public:
 	 * @throws CompilerError on failure to resolve alias.
 	 * @{
 	 */
-	abstract void resolve(Store s);
-	abstract void resolve(Alias a);
+	abstract void resolve(ir.Store s);
+	abstract void resolve(ir.Alias a);
 	/* @} */
 
 	/**
-	 * Resovles a Attribute, for UserAttribute usages.
+	 * Resolves an Attribute, for UserAttribute usages.
 	 */
-	abstract void resolve(Scope current, Attribute a);
+	abstract void resolve(ir.Scope current, ir.Attribute a);
 
 	/**
-	 * Resolves a Enum making it usable externaly.
+	 * Resolves an Enum making it usable externaly.
 	 *
 	 * @throws CompilerError on failure to resolve the enum.
 	 */
-	abstract void resolve(Enum e);
+	abstract void resolve(ir.Enum e);
 
 	/**
-	 * Resolves a EnumDeclaration setting its value.
+	 * Resolves an EnumDeclaration setting its value.
 	 *
 	 * @throws CompilerError on failure to resolve the enum value.
 	 */
-	abstract void resolve(Scope current, EnumDeclaration ed);
+	abstract void resolve(ir.Scope current, ir.EnumDeclaration ed);
 
 	/**
-	 * Resoltes a AAType and checks if the Key-Type is compatible
+	 * Resolves an AAType and checks if the Key-Type is compatible
 	 *
 	 * @throws CompilerError on invalid Key-Type
 	 */
-	abstract void resolve(Scope current, AAType at);
+	abstract void resolve(ir.Scope current, ir.AAType at);
 
 	/**
-	 * Resovles a Struct, done on lookup of it.
+	 * Resolves a Struct, done on lookup of it.
 	 */
-	final void resolve(Struct s)
+	final void resolve(ir.Struct s)
 	{ if (!s.isResolved) doResolve(s); }
 
 	/**
-	 * Resovles a Union, done on lookup of it.
+	 * Resolves a Union, done on lookup of it.
 	 */
-	final void resolve(Union u)
+	final void resolve(ir.Union u)
 	{ if (!u.isResolved) doResolve(u); }
 
 	/**
-	 * Resovles a Class, making sure the parent is populated.
+	 * Resolves a Class, making sure the parent class is populated.
 	 */
-	final void resolve(Class c)
+	final void resolve(ir.Class c)
 	{ if (!c.isResolved) doResolve(c); }
 
 	/**
-	 * Resovles a UserAttribute, done on lookup of it.
+	 * Resolves an Interface.
 	 */
-	final void resolve(UserAttribute au)
+	final void resolve(ir._Interface i)
+	{ if (!i.isResolved) doResolve(i); }
+
+	/**
+	 * Resolves a UserAttribute, done on lookup of it.
+	 */
+	final void resolve(ir.UserAttribute au)
 	{ if (!au.isResolved) doResolve(au); }
 
 	/**
 	 * Actualize a Struct, making sure all its fields and methods
 	 * are populated, and any embedded structs (not referenced
-	 * via pointers) are resolved as well.
+	 * via pointers) are actualized as well. In short makes sure
+	 * that the struct size is fully known.
 	 */
-	final void actualize(Struct s)
+	final void actualize(ir.Struct s)
 	{ if (!s.isActualized) doActualize(s); }
 
 	/**
@@ -288,8 +318,14 @@ public:
 	 * are populated, and any embedded structs (not referenced
 	 * via pointers) are resolved as well.
 	 */
-	final void actualize(Union u)
+	final void actualize(ir.Union u)
 	{ if (!u.isActualized) doActualize(u); }
+
+	/**
+	 * Actualize an Interface.
+	 */
+	final void actualize(ir._Interface i)
+	{ if (!i.isActualized) doActualize(i); }
 
 	/**
 	 * Actualize a Class, making sure all its fields and methods
@@ -300,7 +336,7 @@ public:
 	 * Any lowering structs and internal variables are also
 	 * generated by this function.
 	 */
-	final void actualize(Class c)
+	final void actualize(ir.Class c)
 	{ if (!c.isActualized) doActualize(c); }
 
 	/**
@@ -311,7 +347,7 @@ public:
 	 * Any lowering classes/structs and internal variables
 	 * are also generated by this function.
 	 */
-	final void actualize(UserAttribute ua)
+	final void actualize(ir.UserAttribute ua)
 	{ if (!ua.isActualized) doActualize(ua); }
 
 
@@ -321,11 +357,11 @@ public:
 	 *
 	 */
 
-	abstract void phase1(Module m);
+	abstract void phase1(ir.Module m);
 
-	abstract void phase2(Module[] m);
+	abstract void phase2(ir.Module[] m);
 
-	abstract void phase3(Module[] m);
+	abstract void phase3(ir.Module[] m);
 
 
 	/*
@@ -335,21 +371,23 @@ public:
 	 */
 
 protected:
-	abstract void doResolve(Class c);
-	abstract void doResolve(Union u);
-	abstract void doResolve(Struct c);
-	abstract void doResolve(UserAttribute ua);
+	abstract void doResolve(ir._Interface i);
+	abstract void doResolve(ir.Class c);
+	abstract void doResolve(ir.Union u);
+	abstract void doResolve(ir.Struct c);
+	abstract void doResolve(ir.UserAttribute ua);
 
-	abstract void doActualize(Struct s);
-	abstract void doActualize(Union u);
-	abstract void doActualize(Class c);
-	abstract void doActualize(UserAttribute ua);
+	abstract void doActualize(ir._Interface i);
+	abstract void doActualize(ir.Struct s);
+	abstract void doActualize(ir.Union u);
+	abstract void doActualize(ir.Class c);
+	abstract void doActualize(ir.UserAttribute ua);
 }
 
 /**
  * @defgroup passLower Lowering Passes
  * @ingroup passes
- * @brief Lowers before being passed of to backends.
+ * @brief Lowers ir before being passed of to backends.
  */
 
 /**
@@ -367,30 +405,30 @@ enum TargetType
 /**
  * Interface implemented by backends. Often the last stage of the compile
  * pipe that is implemented in this compiler, optimization and linking
- * are often done outside of the compiler, either invoked dctly by us
+ * are often done outside of the compiler, either invoked directly by us
  * or a build system.
  */
-class Backend
+interface Backend
 {
 	/**
 	 * Return the supported target types.
 	 */
-	TargetType[] supported() { return null; }
+	TargetType[] supported();
 
 	/**
 	 * Set the target file and output type. Backends usually only
 	 * suppports one or two output types @see supported.
 	 */
-	void setTarget(string filename, TargetType type) { return; }
+	void setTarget(string filename, TargetType type);
 
 	/**
 	 * Compile the given module. You need to have called setTarget before
 	 * calling this function. setTarget needs to be called for each
 	 * invocation of this function.
 	 */
-	void compile(Module m) { return; }
+	void compile(ir.Module m);
 
-	void close() { return; }
+	void close();
 }
 
 /**
@@ -435,11 +473,12 @@ public:
 	bool debugEnabled; ///< The -d argument.
 	bool noBackend; ///< The -S argument.
 	bool noLink; ///< The -c argument
-	bool emitBitCode; ///< The --emit-bitcode argument.
+	bool emitBitcode; ///< The --emit-bitcode argument.
 	bool noCatch; ///< The --no-catch argument.
 	bool internalDebug; ///< The --internal-dbg argument.
 	bool noStdLib; ///< The --no-stdlib argument.
 	bool removeConditionalsOnly; ///< The -E argument.
+	bool simpleTrace; ///< The --simple-trace argument.
 
 	Platform platform;
 	Arch arch;
@@ -453,11 +492,30 @@ public:
 	string outputFile;
 	string[] includePaths; ///< The -I arguments.
 
-	string[] libraryPaths; ///< The -L arguements.
+	string[] libraryPaths; ///< The -L arguments.
 	string[] libraryFiles; ///< The -l arguments.
+
+	string[] frameworkPaths; ///< The -F arguments.
+	string[] frameworkNames; ///< The --framework arguments.
 
 	string[] stdFiles; ///< The --stdlib-file arguements.
 	string[] stdIncludePaths; ///< The --stdlib-I arguments.
+
+	struct Alignments
+	{
+		size_t int1;      // bool
+		size_t int8;      // byte, ubyte, char
+		size_t int16;     // short, ushort, wchar
+		size_t int32;     // int, uint, dchar
+		size_t int64;     // long, ulong
+		size_t float32;   // float
+		size_t float64;   // double
+		size_t ptr;       // pointer, class ref
+		size_t aggregate; // struct, class, delegate
+	}
+
+	Alignments alignment;
+
 
 private:
 	/// If the ident exists and is true, it's set, if false it's reserved.
@@ -475,61 +533,101 @@ public:
 	final void processConfigs()
 	{
 		setVersionsFromOptions();
+		setAligmentsFromOptions();
 		replaceMacros();
 	}
 
 	final void replaceMacros()
 	{
-		for (size_t i = 0; i < includePaths.length; i++)
-			includePaths[i] = replaceEscapes(includePaths[i]);
-		for (size_t i = 0; i < libraryPaths.length; i++)
-			libraryPaths[i] = replaceEscapes(libraryPaths[i]);
-		for (size_t i = 0; i < libraryFiles.length; i++)
-			libraryFiles[i] = replaceEscapes(libraryFiles[i]);
-		for (size_t i = 0; i < stdFiles.length; i++)
-			stdFiles[i] = replaceEscapes(stdFiles[i]);
-		for (size_t i = 0; stdIncludePaths.length; i++)
-			stdIncludePaths[i] = replaceEscapes(stdIncludePaths[i]);
+		foreach (ref f; includePaths)
+			f = replaceEscapes(f);
+		foreach (ref f; libraryPaths)
+			f = replaceEscapes(f);
+		foreach (ref f; libraryFiles)
+			f = replaceEscapes(f);
+		foreach (ref f; stdFiles)
+			f = replaceEscapes(f);
+		foreach (ref f; stdIncludePaths)
+			f = replaceEscapes(f);
+	}
+
+	final void setAligmentsFromOptions()
+	{
+		final switch (arch) with (Arch) {
+		case X86:
+			alignment.int1 = 1;
+			alignment.int8 = 1;
+			alignment.int16 = 2;
+			alignment.int32 = 4;
+			alignment.int64 = 4; // abi 4, prefered 8
+			alignment.float32 = 4;
+			alignment.float64 = 4; // abi 4, prefered 8
+			alignment.ptr = 4;
+			alignment.aggregate = 8;
+			break;
+		case X86_64:
+			alignment.int1 = 1;
+			alignment.int8 = 1;
+			alignment.int16 = 2;
+			alignment.int32 = 4;
+			alignment.int64 = 8;
+			alignment.float32 = 4;
+			alignment.float64 = 8;
+			alignment.ptr = 8;
+			alignment.aggregate = 8;
+			break;
+		case LE32:
+			alignment.int1 = 1;
+			alignment.int8 = 1;
+			alignment.int16 = 2;
+			alignment.int32 = 4;
+			alignment.int64 = 8;
+			alignment.float32 = 4;
+			alignment.float64 = 8;
+			alignment.ptr = 4;
+			alignment.aggregate = 8;
+			break;
+		}
 	}
 
 	final void setVersionsFromOptions()
 	{
-		final switch (platform) {
-		case Platform.MinGW:
+		final switch (platform) with (Platform) {
+		case MinGW:
 			platformStr = "mingw";
 			setVersionIdentifier("Windows");
 			setVersionIdentifier("MinGW");
 			break;
-		case Platform.Linux:
+		case Linux:
 			platformStr = "linux";
 			setVersionIdentifier("Linux");
 			setVersionIdentifier("Posix");
 			break;
-		case Platform.OSX:
+		case OSX:
 			platformStr = "osx";
 			setVersionIdentifier("OSX");
 			setVersionIdentifier("Posix");
 			break;
-		case Platform.EMSCRIPTEN:
+		case EMSCRIPTEN:
 			platformStr = "emscripten";
 			setVersionIdentifier("Emscripten");
 			break;
 		}
 
-		final switch (arch) {
-		case Arch.X86:
+		final switch (arch) with (Arch) {
+		case X86:
 			archStr = "x86";
 			setVersionIdentifier("X86");
 			setVersionIdentifier("LittleEndian");
 			setVersionIdentifier("V_P32");
 			break;
-		case Arch.X86_64:
+		case X86_64:
 			archStr = "x86_64";
 			setVersionIdentifier("X86_64");
 			setVersionIdentifier("LittleEndian");
 			setVersionIdentifier("V_P64");
 			break;
-		case Arch.LE32:
+		case LE32:
 			archStr = "le32";
 			setVersionIdentifier("LE32");
 			setVersionIdentifier("LittleEndian");
@@ -539,13 +637,10 @@ public:
 
 	final string replaceEscapes(string file)
 	{
-		auto e = "%@execd";
-		auto a = "%@arch%";
-		auto p = "%@platform%";
+		string e = "%@execdir%";
+		string a = "%@arch%";
+		string p = "%@platform%";
 		size_t ret;
-
-		size_t indexOf(string a, string b) { return 0; }
-		string replace(string a, string b, string c) { return ""; }
 
 		ret = indexOf(file, e);
 		if (ret != size_t.max)
@@ -563,11 +658,11 @@ public:
 	/// Throws: Exception if ident is reserved.
 	final void setVersionIdentifier(string ident)
 	{
-		/*if (auto p = ident in mVersionIdentifiers) {
+		if (auto p = ident in mVersionIdentifiers) {
 			if (!(*p)) {
 				throw new Exception("cannot set reserved identifier.");
 			}
-		}*/
+		}
 		mVersionIdentifiers[ident] = true;
 	}
 
@@ -585,11 +680,11 @@ public:
 	 */
 	final bool isVersionSet(string ident)
 	{
-		//if (auto p = ident in mVersionIdentifiers) {
-		//	return *p;
-		//} else {
+		if (auto p = ident in mVersionIdentifiers) {
+			return *p;
+		} else {
 			return false;
-		//}
+		}
 	}
 
 	/**
@@ -600,17 +695,16 @@ public:
 	 */
 	final bool isDebugSet(string ident)
 	{
-	//	return (ident in mDebugIdentifiers) !is null;
-		return false;
+		return (ident in mDebugIdentifiers) !is null;
 	}
 
-	final PrimitiveType getSizeT(Location loc)
+	final ir.PrimitiveType getSizeT(Location loc)
 	{
-		PrimitiveType pt;
+		ir.PrimitiveType pt;
 		if (isVersionSet("V_P64")) {
-			pt = new PrimitiveType(PrimitiveType.Kind.Ulong);
+			pt = new ir.PrimitiveType(ir.PrimitiveType.Kind.Ulong);
 		} else {
-			pt = new PrimitiveType(PrimitiveType.Kind.Uint);
+			pt = new ir.PrimitiveType(ir.PrimitiveType.Kind.Uint);
 		}
 		pt.location = loc;
 		return pt;
@@ -632,20 +726,3 @@ private:
 	}
 }
 
-version (none) unittest
-{
-	auto settings = new Settings();
-	//assert(!settings.isVersionSet("none"));
-	//assert(settings.isVersionSet("all"));
-	settings.setVersionIdentifier("foo");
-	//assert(settings.isVersionSet("foo"));
-	//assert(!settings.isDebugSet("foo"));
-	settings.setDebugIdentifier("foo");
-	//assert(settings.isDebugSet("foo"));
-
-	try {
-		settings.setVersionIdentifier("none");
-	//	//assert(false);
-	} catch (Exception e) {
-	}
-}
