@@ -419,7 +419,7 @@ ir.Function parseFunction(TokenStream ts, ir.Type base)
 		p.fn = fn;
 		fn.params ~= p;
 	}
-	fn.type.location = ts.previous().location.opSub(ref fn.type.ret.location);
+	fn.type.location = ts.previous.location.opSub(ref fn.type.ret.location);
 
 	bool inBlocks = ts.peek.type != TokenType.Semicolon;
 	while (inBlocks) {

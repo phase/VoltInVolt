@@ -31,6 +31,7 @@ int realMain(string[] args)
 		output.writef("Parsing file %s ... ", arg);
 		output.flush();
 		auto ts = lex(src);
+		ts.get();  // Eat TokenType.Begin.
 		auto mod = parseModule(ts);
 		output.writefln("done");
 	}

@@ -325,6 +325,11 @@ CompilerException makeExpected(ir.Node node, string s, string file = __FILE__, s
 	return makeExpected(node.location, s, false, file, line);
 }
 
+CompilerException makeExpected(Location location, string s, string file = __FILE__, size_t line = __LINE__)
+{
+	return new CompilerError(location, format("expected %s.", s), false, file, line);
+}
+
 CompilerException makeExpected(Location location, string s, bool b, string file = __FILE__, size_t line = __LINE__)
 {
 	return new CompilerError(location, format("expected %s.", s), b, file, line);

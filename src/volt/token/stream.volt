@@ -81,6 +81,11 @@ public:
 		return mTokens[mIndex].type != type;
 	}
 
+	bool opNotEqual(TokenType[] types)
+	{
+		return !opEqual(types);
+	}
+
 	/**
 	 * Compares from the current token and onwards type against
 	 * the list of types.
@@ -118,7 +123,7 @@ public:
 	 * Side-effects:
 	 *   None.
 	 */
-	Token previous()
+	@property Token previous()
 	{
 		return lookbehind(1);
 	}

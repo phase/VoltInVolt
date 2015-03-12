@@ -20,7 +20,6 @@ import volt.parser.expression;
 
 ir.Module parseModule(TokenStream ts)
 {
-	match(ts, TokenType.Begin);
 	auto t = match(ts, TokenType.Module);
 	auto qn = parseQualifiedName(ts);
 	match(ts, TokenType.Semicolon);
@@ -30,7 +29,7 @@ ir.Module parseModule(TokenStream ts)
 
 	mod.children = parseTopLevelBlock(ts, TokenType.End, true);
 
-	mod.children.nodes	 = [
+	mod.children.nodes = [
 			createImport(mod.location, "defaultsymbols", false),
 			createImport(mod.location, "object", true)
 		] ~ mod.children.nodes;
@@ -54,7 +53,7 @@ ir.Node createImport(Location location, string name, bool _static)
 ir.TopLevelBlock parseOneTopLevelBlock(TokenStream ts, bool inModule = false)
 out(result)
 {
-//	assert(result !is null);
+	assert(result !is null);
 }
 body
 {
@@ -63,7 +62,7 @@ body
 
 	switch (ts.peek.type) {
 		case TokenType.Import:
-			tlb.nodes ~= [parseImport(ts, inModule)];
+			tlb.nodes ~= [cast(ir.Node) parseImport(ts, inModule)];
 			break;
 		case TokenType.Unittest:
 			tlb.nodes ~= [cast(ir.Node) parseUnittest(ts)];
@@ -97,12 +96,12 @@ body
 				tlb.nodes ~= [cast(ir.Node) parseMixinTemplate(ts)];
 			} else {
 				auto err = ts.lookahead(1);
-				throw makeExpected(err.location, "'function' or 'template'", false);
+				throw makeExpected(err.location, "'function' or 'template'");
 			}
 			break;
 		case TokenType.Const:
 			if (ts.lookahead(1).type == TokenType.OpenParen) {
-				tlb.nodes ~= parseVariable(ts); break;
+				goto default;
 			} else {
 				goto case;
 			}
@@ -167,7 +166,7 @@ body
 ir.TopLevelBlock parseTopLevelBlock(TokenStream ts, TokenType end, bool inModule = false)
 out(result)
 {
-	//assert(result !is null);
+	assert(result !is null);
 }
 body
 {
@@ -191,7 +190,6 @@ ir.Node parseImport(TokenStream ts, bool inModule)
 	auto _import = new ir.Import();
 	_import.location = ts.peek.location;
 	match(ts, TokenType.Import);
-
 	if (ts == [TokenType.Identifier, TokenType.Assign]) {
 		// import <a = b.c>
 		_import.bind = parseIdentifier(ts);
@@ -203,24 +201,23 @@ ir.Node parseImport(TokenStream ts, bool inModule)
 	}
 
 	// Parse out any aliases.
-	_import.aliases = new ir.ImportAlias[](0);
+	_import.aliases = new ir.Identifier[2][](0);
 	if (matchIf(ts, TokenType.Colon)) {
 		// import a : <b, c = d>
 		bool first = true;
 		do {
 			if (matchIf(ts, TokenType.Comma)) {
 				if (first) {
-					throw makeExpected(ts.peek.location, "identifier", false);
+					throw makeExpected(ts.peek.location, "identifier");
 				}
 			}
 			first = false;
-			ir.ImportAlias ia;
-			ia._0 = parseIdentifier(ts);
+			_import.aliases.length = _import.aliases.length + 1;
+			_import.aliases[$ - 1][0] = parseIdentifier(ts);
 			if (matchIf(ts, TokenType.Assign)) {
 				// import a : b, <c = d>
-				ia._1 = parseIdentifier(ts);
+				_import.aliases[$ - 1][1] = parseIdentifier(ts);
 			}
-			_import.aliases ~= ia;
 		} while (ts.peek.type == TokenType.Comma);
 	}
 
@@ -315,7 +312,7 @@ ir.Function parseConstructor(TokenStream ts)
 			c._body = parseBlock(ts);
 			break;
 		default:
-			throw makeExpected(ts.peek.location, "block declaration", false);
+			throw makeExpected(ts.peek.location, "block declaration");
 		}
 	}
 
@@ -341,7 +338,7 @@ ir.Function parseDestructor(TokenStream ts)
 	match(ts, TokenType.Tilde);
 
 	// Get the location of ~this.
-	d.location = ts.peek.location.opSub(ref ts.previous().location);
+	d.location = ts.peek.location - ts.previous.location;
 
 	match(ts, TokenType.This);
 	match(ts, TokenType.OpenParen);
@@ -414,6 +411,8 @@ ir.Union parseUnion(TokenStream ts)
 	if (ts.peek.type == TokenType.Identifier) {
 		auto nameTok = match(ts, TokenType.Identifier);
 		u.name = nameTok.value;
+	} else {
+		throw makeUnsupported(u.location, "anonymous union declarations");
 	}
 
 	if (ts.peek.type == TokenType.Semicolon) {
@@ -442,6 +441,8 @@ ir.Struct parseStruct(TokenStream ts)
 	if (ts.peek.type == TokenType.Identifier) {
 		auto nameTok = match(ts, TokenType.Identifier);
 		s.name = nameTok.value;
+	} else {
+		throw makeUnsupported(s.location, "anonymous struct declarations");
 	}
 
 	if (ts.peek.type == TokenType.Semicolon) {
@@ -491,7 +492,7 @@ ir.Node[] parseEnum(TokenStream ts)
 
 		// Better error printing.
 		if (ts.peek.type == TokenType.CloseBrace) {
-			throw makeExpected(origin, "member", false);
+			throw makeExpected(origin, "member");
 		}
 
 		while (true) {
@@ -500,7 +501,7 @@ ir.Node[] parseEnum(TokenStream ts)
 			prevEnum = ed;
 			if (namedEnum !is null) {
 				if (ed.type !is null) {
-					throw makeExpected(ed.type.location, "non typed member", false);
+					throw makeExpected(ed.type.location, "non typed member");
 				}
 				ed.type = buildTypeReference(namedEnum.location, namedEnum);
 				namedEnum.members ~= ed;
@@ -522,14 +523,14 @@ ir.Node[] parseEnum(TokenStream ts)
 				}
 			}
 
-			throw makeExpected(ts.peek.location, "',' or '}'", false);
+			throw makeExpected(ts.peek.location, "',' or '}'");
 		}
 
 	} else {
 		if (namedEnum !is null) {
-			throw makeExpected(ts.peek.location, "'{'", false);
+			throw makeExpected(ts.peek.location, "'{'");
 		}
-		if (!(ts == [TokenType.Identifier, TokenType.Assign])) {
+		if (ts != [TokenType.Identifier, TokenType.Assign]) {
 			base = parseType(ts);
 		} else {
 			base = buildStorageType(ts.peek.location, ir.StorageType.Kind.Auto, null);
@@ -614,7 +615,7 @@ ir.Attribute parseAttribute(TokenStream ts, bool inModule = false)
 			case "System": attr.kind = ir.Attribute.Kind.LinkageSystem; break;
 			case "Volt": attr.kind = ir.Attribute.Kind.LinkageVolt; break;
 			default:
-				throw makeExpected(linkageTok.location, "'C', 'C++', 'D', 'Windows', 'Pascal', 'System', or 'Volt'", false);
+				throw makeExpected(linkageTok.location, "'C', 'C++', 'D', 'Windows', 'Pascal', 'System', or 'Volt'");
 			}
 			match(ts, TokenType.CloseParen);
 		} else {
@@ -629,7 +630,7 @@ ir.Attribute parseAttribute(TokenStream ts, bool inModule = false)
 		break;
 	case TokenType.At:
 		if (ts.peek.type != TokenType.Identifier) {
-			throw makeExpected(ts.peek.location, "identifier", false);
+			throw makeExpected(ts.peek.location, "identifier");
 		}
 		switch (ts.peek.value) {
 		case "disable":
@@ -662,6 +663,10 @@ ir.Attribute parseAttribute(TokenStream ts, bool inModule = false)
 			match(ts, TokenType.OpenParen);
 			attr.arguments ~= parseExp(ts);
 			match(ts, TokenType.CloseParen);
+			break;
+		case "label":
+			auto nameTok = match(ts, TokenType.Identifier);
+			attr.kind = ir.Attribute.Kind.Label;
 			break;
 		default:
 			attr.kind = ir.Attribute.Kind.UserAttribute;
@@ -755,7 +760,7 @@ package ir.Condition parseCondition(TokenStream ts)
 		match(ts, TokenType.OpenParen);
 		break;
 	default:
-		throw makeExpected(ts.peek.location, "'version', 'debug', or 'static'", false);
+		throw makeExpected(ts.peek.location, "'version', 'debug', or 'static'");
 	}
 
 	condition.exp = parseExp(ts);
@@ -808,7 +813,7 @@ ir.UserAttribute parseUserAttribute(TokenStream ts)
 	ui.name = nameTok.value;
 
 	if (ui.name[0] >= 'a' && ui.name[0] <= 'z') {
-		throw makeExpected(ts.peek.location, "upper case letter or '_'", false);
+		throw makeExpected(ts.peek.location, "upper case letter or '_'");
 	}
 
 	match(ts, TokenType.OpenBrace);

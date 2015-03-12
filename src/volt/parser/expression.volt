@@ -762,7 +762,7 @@ intir.BinExp parseBinExp(TokenStream ts)
 		exp.right = parseBinExp(ts);
 	}
 
-	exp.location.spanTo(ref ts.previous().location);
+	exp.location.spanTo(ref ts.previous.location);
 	return exp;
 }
 
