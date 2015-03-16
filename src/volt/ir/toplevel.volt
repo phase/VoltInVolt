@@ -128,6 +128,13 @@ public:
 class Import : Node
 {
 public:
+	struct Alias
+	{
+		Identifier _0;
+		Identifier _1;
+	}
+
+public:
 	/// public, private, package or protected.
 	Access access = Access.Private;
 
@@ -141,7 +148,7 @@ public:
 	Identifier bind;
 
 	/// Optional, import a : <b = c, d>
-	Identifier[2][] aliases;
+	Alias[] aliases;
 
 	/// This points at the imported module -- filled in by ImportResolver.
 	Module targetModule;
