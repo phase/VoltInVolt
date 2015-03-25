@@ -126,6 +126,8 @@ public:
 	Exp left;  ///< The left hand side of the expression.
 	Exp right;  ///< The right hand side of the expression.
 
+	bool isInternalNestedAssign;  ///< Is an assignment generated for passing context to a closure.
+
 public:
 	this() { super(NodeType.BinOp); }
 }
@@ -198,7 +200,8 @@ public:
 	Op op;
 	Exp child;  // What the op is operating on.
 	Exp[] arguments;
-	TagKind[] argumentTags;
+	TagKind[] argumentTags;   // foo(ref a);
+	string[] argumentLabels;  // foo(age:7);
 	Identifier identifier;  // op == Identifier
 	ExpReference memberFunction;
 	bool isImplicitPropertyCall;
@@ -229,7 +232,7 @@ public:
 	U u;
 	string _string;
 	bool isNull;  // Turns out checking for non-truth can be hard.
-	void[] arrayData;
+	immutable(void)[] arrayData;
 	Type type;
 
 public:
@@ -468,10 +471,21 @@ class StructLiteral : Exp
 {
 public:
 	Exp[] exps;
-	Type type;  ///< Filled in Later.
+	Type type;  /// Filled in Later.
 
 public:
 	this() { super(NodeType.StructLiteral); }
+}
+
+/// A UnionLiteral is a compiler internal expression form of a struct
+class UnionLiteral : Exp
+{
+public:
+	Exp[] exps;
+	Type type;
+
+public:
+	this() { super(NodeType.UnionLiteral); }
 }
 
 /// A ClassLiteral is a compiler internal expression form of a class.
@@ -551,6 +565,7 @@ class StatementExp : Exp
 public:
 	Node[] statements; ///< A list of statements to be executed.
 	Exp exp; ///< The value of the StatementExp
+	Exp originalExp; ///< If this was lowered from something, the original will go here.
 
 public:
 	this() { super(NodeType.StatementExp); }
