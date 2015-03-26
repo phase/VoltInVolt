@@ -120,6 +120,7 @@ enum NodeType
 	FunctionLiteral,
 	ExpReference,
 	StructLiteral,
+	UnionLiteral,
 	ClassLiteral,
 	TraitsExp,
 	TypeExp,
@@ -213,8 +214,7 @@ public:
 	override string toString()
 	{
 		string str;
-		for (size_t i = 0; i < identifiers.length; i++) {
-			auto identifier = identifiers[i];
+		foreach (i, identifier; identifiers) {
 			str ~= identifier.value;
 			if (i < identifiers.length - 1) {
 				str ~= ".";
@@ -225,10 +225,9 @@ public:
 
 	string[] strings()
 	{
-		string[] ret = new string[](identifiers.length);
+		string[] ret = new string[identifiers.length];
 
-		for (size_t i = 0; i < identifiers.length; i++) {
-			auto identifier = identifiers[i];
+		foreach (i, identifier; identifiers) {
 			ret[i] = identifier.value;
 		}
 
@@ -250,20 +249,18 @@ class Identifier : Node
 public:
 	string value;
 
-	this() { super(NodeType.Identifier); return; }
+	this() { super(NodeType.Identifier); }
 	this(string s)
 	{
 		this();
 		value = s;
-		return;
 	}
 
 	this(Identifier i)
 	{
 		this();
 		value = i.value;
-		//location = i.location;
-		return;
+		location = i.location;
 	}
 }
 
@@ -371,6 +368,7 @@ string nodeToString(NodeType nodeType)
 	case FunctionLiteral: return "FunctionLiteral";
 	case ExpReference: return "ExpReference";
 	case StructLiteral: return "StructLiteral";
+	case UnionLiteral: return "UnionLiteral";
 	case ClassLiteral: return "ClassLiteral";
 	case TraitsExp: return "TraitsExp";
 	case TypeExp: return "TypeExp";
