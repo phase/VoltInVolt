@@ -4,6 +4,8 @@ module volt.llvm.expression;
 
 import watt.conv;
 
+import lib.llvm.core;
+
 import volt.token.location : Location;
 import volt.errors;
 
@@ -345,7 +347,7 @@ void handleBinOpAssign(State state, ir.BinOp bin, Value result)
 	case OrAssign: op = Or; break;
 	case XorAssign: op = Xor; break;
 	default:
-		throw panicUnhandled(bin, to!string(bin.op));
+		throw panicUnhandled(bin, toString(bin.op));
 	}
 
 	auto pt = cast(PrimitiveType)right.type;
@@ -474,7 +476,7 @@ void handleBinOpPrimitive(State state, Location loc, ir.BinOp.Op binOp,
 		op = LLVMOpcode.Xor;
 		break;
 	default:
-		throw panicUnhandled(loc, to!string(binOp));
+		throw panicUnhandled(loc, toString(binOp));
 	}
 
 	// Either right or left could be result, keep that in mind.
@@ -517,7 +519,7 @@ void handleUnary(State state, ir.Unary unary, Value result)
 		handleIncDec(state, unary, result);
 		break;
 	default:
-		throw panicUnhandled(unary.location, to!string(unary.op));
+		throw panicUnhandled(unary.location, toString(unary.op));
 	}
 }
 
@@ -567,7 +569,7 @@ void handleCast(State state, Location loc, Type newType, Value result)
 	    (oldTypePtr !is null || oldTypePrim !is null))
 		return handleCastPointerPrim(state, loc, newTypePtr, newTypePrim, result);
 
-	throw panicUnhandled(loc, to!string(newType.irType.nodeType));
+	throw panicUnhandled(loc, toString(newType.irType.nodeType));
 }
 
 /**
@@ -817,7 +819,7 @@ void handlePostfix(State state, ir.Postfix postfix, Value result)
 		handleIncDec(state, postfix, result);
 		break;
 	default:
-		throw panicUnhandled(postfix.location, to!string(postfix.op));
+		throw panicUnhandled(postfix.location, toString(postfix.op));
 	}
 }
 
@@ -894,7 +896,7 @@ void handlePostId(State state, ir.Postfix postfix, Value result)
 		result.type = t;
 
 	} else {
-		throw panic(postfix.child.location, format("%s is not struct, array or pointer", to!string(cast(void*) result.type)));
+		throw panic(postfix.child.location, format("%s is not struct, array or pointer", toString(cast(void*) result.type)));
 	}
 }
 
@@ -998,7 +1000,7 @@ void handleSliceTwo(State state, ir.Postfix postfix, Value result)
 		at = sat.arrayType;
 
 	} else {
-		throw panicUnhandled(postfix, to!string(left.type.irType.nodeType));
+		throw panicUnhandled(postfix, toString(left.type.irType.nodeType));
 	}
 
 	// Do we need temporary storage for the result?
@@ -1221,7 +1223,7 @@ void handleExpReference(State state, ir.ExpReference expRef, Value result)
 		getConstantValue(state, ed.assign, result);
 		break;
 	default:
-		throw panicUnhandled(expRef.location, to!string(expRef.decl.declKind));
+		throw panicUnhandled(expRef.location, toString(expRef.decl.declKind));
 	}
 }
 
