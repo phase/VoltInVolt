@@ -12,7 +12,7 @@ import ir = volt.ir.ir;
 int main(string[] args)
 {
 	try {
-		return realMain(args);
+		return init(args);
 	} catch (object.Throwable e) {
 		output.writefln("%s", e.message);
 		return 1;
@@ -20,7 +20,7 @@ int main(string[] args)
 	assert(false);
 }
 
-int realMain(string[] args)
+int init(string[] args)
 {
 	if (args.length == 1) {
 		output.writefln("usage: %s [files]\n", args[0]);
